@@ -163,6 +163,7 @@ func scanMusicFolders() {
 
 	for _, folder := range config.MusicFolders {
 		filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
+			log.Println("Scanning: ", folder)
 			if err != nil {
 				return err
 			}
