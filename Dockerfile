@@ -13,7 +13,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN GOARCH=amd64 GOOS=linux go build -o tower-of-song
+RUN GOARCH=aarch64 GOOS=linux go build -o tower-of-song
 
 # Use a minimal base image for the final container
 FROM alpine:latest
