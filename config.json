@@ -1,2 +1,3 @@
-{ "music_folders": ["p:\\dj", "p:\\My Music" ]
+{ 
+    "music_folders": ["/app/music" ]
 }

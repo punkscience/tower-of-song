@@ -44,6 +44,13 @@ func initDB() error {
 		return err
 	}
 
+	// Enable WAL mode
+	_, err = db.Exec("PRAGMA journal_mode=WAL;")
+	if err != nil {
+		fmt.Println("Error enabling WAL mode:", err)
+		return err
+	}
+
 	_, err = db.Exec(`CREATE TABLE music (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		path TEXT UNIQUE,
@@ -212,7 +219,7 @@ func main() {
 	go func() {
 		for {
 			scanMusicFolders()
-			time.Sleep(time.Hour)
+			time.Sleep(24 * time.Hour)
 		}
 	}()
 
