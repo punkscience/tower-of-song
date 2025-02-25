@@ -207,6 +207,8 @@ func storeMetadata(path string) {
 }
 
 func main() {
+	fmt.Println("Starting Tower of Song server...")
+
 	if err := loadConfig(); err != nil {
 		fmt.Println("Error loading config:", err)
 		return
