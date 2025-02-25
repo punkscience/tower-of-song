@@ -19,12 +19,9 @@ RUN go build -o tower-of-song
 FROM ubuntu:latest
 
 # Install necessary dependencies
-RUN apt update && apt install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt install -y ca-certificates sqlite3 && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-
-# Install SQLite since our app uses it
-RUN apk add --no-cache sqlite
 
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/tower-of-song /app/tower-of-song
