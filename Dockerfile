@@ -16,7 +16,10 @@ COPY . .
 RUN go build -o tower-of-song
 
 # Use a minimal base image for the final container
-FROM alpine:latest
+FROM ubuntu:latest
+
+# Install necessary dependencies
+RUN apt update && apt install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -25,6 +28,9 @@ RUN apk add --no-cache sqlite
 
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/tower-of-song /app/tower-of-song
+
+# Ensure the binary is executable
+RUN chmod +x /app/tower-of-song
 
 # Copy the config file (if needed)
 COPY ./config.json /app/config.json
