@@ -5,34 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music API Test Client</title>
     <script>
+        let authToken = null;
+        function setControlsEnabled(enabled) {
+            document.getElementById("statsBtn").disabled = !enabled;
+            document.getElementById("listBtn").disabled = !enabled;
+            document.getElementById("searchBtn").disabled = !enabled;
+            document.getElementById("id").disabled = !enabled;
+            document.getElementById("streamBtn").disabled = !enabled;
+            document.getElementById("searchQuery").disabled = !enabled;
+        }
+        async function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const resp = await fetch("http://localhost:8080/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                authToken = data.token;
+                setControlsEnabled(true);
+                document.getElementById("loginStatus").innerText = "Login successful!";
+            } else {
+                document.getElementById("loginStatus").innerText = "Login failed.";
+                setControlsEnabled(false);
+            }
+        }
         async function testAPI(endpoint) {
-            let response = await fetch(endpoint);
+            if (!authToken) return;
+            let response = await fetch(endpoint, {
+                headers: { "Authorization": authToken }
+            });
             let data = await response.json();
             document.getElementById("output").innerText = JSON.stringify(data, null, 2);
         }
-
         function streamAudio() {
+            if (!authToken) return;
             let id = document.getElementById("id").value;
             let audio = document.getElementById("audioPlayer");
             audio.src = `http://localhost:8080/stream?id=${encodeURIComponent(id)}`;
-            console.log(audio.src);
-            audio.play();
+            audio.setAttribute("crossorigin", "anonymous");
+            audio.load();
+            // Set Authorization header for audio streaming
+            fetch(audio.src, { headers: { "Authorization": authToken } })
+                .then(resp => {
+                    if (resp.ok) {
+                        audio.src = audio.src + "&token=" + encodeURIComponent(authToken);
+                        audio.play();
+                    } else {
+                        document.getElementById("output").innerText = "Unauthorized or error streaming audio.";
+                    }
+                });
         }
+        window.onload = function() {
+            setControlsEnabled(false);
+        };
     </script>
 </head>
 <body>
     <h2>Music API Test Client</h2>
-    
-    <button onclick="testAPI('http://localhost:8080/stats')">Get Stats</button>
-    <button onclick="testAPI('http://localhost:8080/list')">List Files</button>
+    <div>
+        <label>Username: <input type="text" id="username" value="admin"></label>
+        <label>Password: <input type="password" id="password" value="password"></label>
+        <button onclick="login()">Login</button>
+        <span id="loginStatus" style="margin-left:10px;"></span>
+    </div>
+    <hr>
+    <button id="statsBtn" onclick="testAPI('http://localhost:8080/stats')">Get Stats</button>
+    <button id="listBtn" onclick="testAPI('http://localhost:8080/list')">List Files</button>
     <input type="text" id="searchQuery" placeholder="Enter keyword">
-    <button onclick="testAPI('http://localhost:8080/search?q=' + document.getElementById('searchQuery').value)">Search</button>
-    
+    <button id="searchBtn" onclick="testAPI('http://localhost:8080/search?q=' + document.getElementById('searchQuery').value)">Search</button>
     <h3>Stream Audio</h3>
     <input type="text" id="id" placeholder="Enter file id">
-    <button onclick="streamAudio()">Stream</button>
+    <button id="streamBtn" onclick="streamAudio()">Stream</button>
     <audio id="audioPlayer" controls></audio>
-
     <h3>API Response</h3>
     <pre id="output" style="border:1px solid #000; padding:10px; background:#f4f4f4; white-space:pre-wrap;"></pre>
 </body>

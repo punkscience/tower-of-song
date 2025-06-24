@@ -25,7 +25,69 @@ var (
 	db     *sql.DB
 	config Config
 	mutex  sync.Mutex
+
+	tokenStore = make(map[string]struct{}) // simple in-memory token store
 )
+
+const (
+	validUsername = "admin"
+	validPassword = "password"
+)
+
+func generateToken() string {
+	return fmt.Sprintf("token-%d", time.Now().UnixNano())
+}
+
+func requireAuth(w http.ResponseWriter, r *http.Request) bool {
+	header := r.Header.Get("Authorization")
+	token := header
+	if token == "" {
+		token = r.URL.Query().Get("token")
+	}
+	if token == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return false
+	}
+	mutex.Lock()
+	_, ok := tokenStore[token]
+	mutex.Unlock()
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return false
+	}
+	return true
+}
+
+func login(w http.ResponseWriter, r *http.Request) {
+	enableCORS(w)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var creds struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&creds)
+	if err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	if creds.Username == validUsername && creds.Password == validPassword {
+		token := generateToken()
+		mutex.Lock()
+		tokenStore[token] = struct{}{}
+		mutex.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"token": token})
+		return
+	}
+	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+}
 
 func loadConfig() error {
 	file, err := os.Open("config.json")
@@ -63,8 +125,8 @@ func initDB() error {
 
 func enableCORS(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS, POST")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 }
 
 func getStats(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +135,9 @@ func getStats(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-
+	if !requireAuth(w, r) {
+		return
+	}
 	var count int
 	db.QueryRow("SELECT COUNT(*) FROM music").Scan(&count)
 	w.Header().Set("Content-Type", "application/json")
@@ -86,17 +150,17 @@ func listFiles(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-
+	if !requireAuth(w, r) {
+		return
+	}
 	rows, _ := db.Query("SELECT id, path, title, artist, album FROM music ORDER BY artist ASC, title ASC")
 	var files []map[string]string
-
 	for rows.Next() {
 		var id int
 		var path, title, artist, album string
 		rows.Scan(&id, &path, &title, &artist, &album)
 		files = append(files, map[string]string{"id": fmt.Sprint(id), "path": path, "title": title, "artist": artist, "album": album})
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(files)
 }
@@ -107,10 +171,11 @@ func searchFiles(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-
+	if !requireAuth(w, r) {
+		return
+	}
 	query := r.URL.Query().Get("q")
 	rows, _ := db.Query("SELECT id, path, title, artist, album FROM music WHERE title LIKE ? OR artist LIKE ? OR album LIKE ? OR path LIKE ?", "%"+query+"%", "%"+query+"%", "%"+query+"%", "%"+query+"%")
-
 	var files []map[string]string
 	for rows.Next() {
 		var id int
@@ -118,7 +183,6 @@ func searchFiles(w http.ResponseWriter, r *http.Request) {
 		rows.Scan(&id, &path, &title, &artist, &album)
 		files = append(files, map[string]string{"id": fmt.Sprint(id), "path": path, "title": title, "artist": artist, "album": album})
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(files)
 }
@@ -135,18 +199,16 @@ func streamFile(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-
+	if !requireAuth(w, r) {
+		return
+	}
 	id := r.URL.Query().Get("id")
-
 	filePath := getFilePathFromId(id)
-
 	if filePath == "" {
 		http.Error(w, "File not found", http.StatusNotFound)
 		return
 	}
-
 	log.Println("Streaming file: ", filePath)
-
 	file, err := os.Open(filePath)
 	if err != nil {
 		http.Error(w, "File not found", http.StatusNotFound)
@@ -163,7 +225,7 @@ func scanMusicFolders() {
 
 	for _, folder := range config.MusicFolders {
 		filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
-			log.Println("Scanning: ", folder)
+			log.Println("Scanning: ", path)
 			if err != nil {
 				return err
 			}
@@ -209,7 +271,6 @@ func storeMetadata(path string) {
 
 func main() {
 	fmt.Println("Starting Tower of Song server...")
-
 	if err := loadConfig(); err != nil {
 		fmt.Println("Error loading config:", err)
 		return
@@ -218,19 +279,17 @@ func main() {
 		fmt.Println("Error initializing DB:", err)
 		return
 	}
-
 	go func() {
 		for {
 			scanMusicFolders()
 			time.Sleep(24 * time.Hour)
 		}
 	}()
-
+	http.HandleFunc("/login", login)
 	http.HandleFunc("/stats", getStats)
 	http.HandleFunc("/list", listFiles)
 	http.HandleFunc("/search", searchFiles)
 	http.HandleFunc("/stream", streamFile)
-
 	fmt.Println("Server running on :8080")
 	http.ListenAndServe(":8080", nil)
 }
