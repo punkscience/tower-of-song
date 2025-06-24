@@ -1,3 +1,5 @@
 { 
-    "music_folders": ["/app/music" ]
+    "music_folders": ["/app/music"],
+    "username": "admin",
+    "password": "password"
 }

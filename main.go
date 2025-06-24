@@ -19,6 +19,8 @@ import (
 
 type Config struct {
 	MusicFolders []string `json:"music_folders"`
+	Username     string   `json:"username"`
+	Password     string   `json:"password"`
 }
 
 var (
@@ -27,11 +29,6 @@ var (
 	mutex  sync.Mutex
 
 	tokenStore = make(map[string]struct{}) // simple in-memory token store
-)
-
-const (
-	validUsername = "admin"
-	validPassword = "password"
 )
 
 func generateToken() string {
@@ -77,7 +74,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
-	if creds.Username == validUsername && creds.Password == validPassword {
+	if creds.Username == config.Username && creds.Password == config.Password {
 		token := generateToken()
 		mutex.Lock()
 		tokenStore[token] = struct{}{}
