@@ -95,7 +95,9 @@ All API endpoints support CORS with the following headers:
 **Configuration File**: `config.json`
 ```json
 {
-    "music_folders": ["/app/music"]
+    "music_folders": ["/app/music"],
+    "username": "yourusername",
+    "password": "yourpassword"
 }
 ```
 
@@ -110,12 +112,19 @@ All API endpoints support CORS with the following headers:
 ### Authentication Model
 
 - All API endpoints (except `/login`) require authentication via a token.
+- Credentials (username and password) are now read from `config.json`:
+  ```json
+  {
+    "music_folders": ["/app/music"],
+    "username": "yourusername",
+    "password": "yourpassword"
+  }
+  ```
 - Clients must POST to `/login` with a JSON body containing `username` and `password`.
 - On successful authentication, the server returns a token.
 - The client must include this token in the `Authorization` header for all subsequent API requests.
 - If the token is missing or invalid, the server responds with `401 Unauthorized`.
 - The server uses an in-memory token store (tokens are lost on restart).
-- Default credentials: `admin` / `password` (for demonstration; should be changed in production).
 
 ### API Changes
 
@@ -285,7 +294,6 @@ curl http://localhost:8080/stream?id=123
 1. **Persistent Database**: File-based SQLite storage
 2. **Authentication**: User management system
 3. **Playlists**: Create and manage music playlists
-4. **Audio Transcoding**: Support for more formats
 
 ### Medium Priority
 1. **Caching**: Response and metadata caching
@@ -371,6 +379,10 @@ curl http://localhost:8080/stream?id=123
 - Error rates
 - File processing statistics
 - Performance metrics
+
+## Operating Instructions
+
+See [docs/instructions.md](instructions.md) for setup, deployment, and usage instructions.
 
 ---
 
