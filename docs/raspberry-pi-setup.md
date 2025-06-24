@@ -1,0 +1,188 @@
+# Tower of Song: Raspberry Pi Home Streaming Setup Guide
+
+This guide will walk you through installing, configuring, and exposing the Tower of Song music streaming server on a Raspberry Pi, making it accessible from anywhere.
+
+---
+
+## Prerequisites
+
+- **Raspberry Pi 3/4** (recommended, running Raspberry Pi OS or similar)
+- **MicroSD card** (16GB+ recommended)
+- **Home network with router access**
+- **Music files** on a USB drive or local storage
+- **A computer for SSH/remote access**
+
+---
+
+## 1. Prepare Your Raspberry Pi
+
+1. **Flash Raspberry Pi OS** to your SD card (use [Raspberry Pi Imager](https://www.raspberrypi.com/software/)).
+2. **Boot and connect** your Pi to your home network (Ethernet recommended for stability).
+3. **Update your system:**
+   ```bash
+   sudo apt update && sudo apt upgrade -y
+   ```
+4. **Install Docker:**
+   ```bash
+   curl -sSL https://get.docker.com | sh
+   sudo usermod -aG docker $USER
+   # Log out and back in for group changes to take effect
+   ```
+5. **(Optional) Install Docker Compose:**
+   ```bash
+   sudo apt install -y docker-compose
+   ```
+
+---
+
+## 2. Get Tower of Song
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/punkscience/tower-of-song.git
+   cd tower-of-song
+   ```
+2. **Plug in your USB drive** (if using external storage) and note its mount path (e.g., `/media/pi/MUSIC`).
+
+---
+
+## 3. Configure Your Music Folder
+
+1. **Edit `config.json`:**
+   ```json
+   {
+     "music_folders": ["/path/to/your/music"]
+   }
+   ```
+   - Replace `/path/to/your/music` with your actual music directory (e.g., `/media/pi/MUSIC`).
+
+---
+
+## 4. Build and Run with Docker
+
+1. **Build the Docker image:**
+   ```bash
+   docker build -t tower-of-song .
+   ```
+2. **Run the server:**
+   ```bash
+   docker run -d \
+     --name tower-of-song \
+     -p 8080:8080 \
+     -v /path/to/your/music:/app/music:ro \
+     -v $(pwd)/config.json:/app/config.json:ro \
+     tower-of-song
+   ```
+   - The `:ro` makes the music and config read-only inside the container.
+
+3. **Test locally:**
+   - Open `http://<raspberry-pi-ip>:8080` in your browser.
+   - Use the credentials `admin` / `password` to log in.
+
+---
+
+## 5. Make It Accessible from the Internet
+
+### **A. Port Forwarding (Simplest Method)**
+
+1. **Log in to your router's admin page.**
+2. **Find the Port Forwarding section.**
+3. **Forward external port 8080 to your Pi's internal IP and port 8080.**
+   - Example: `WAN:8080` → `192.168.1.42:8080`
+4. **Find your public IP address:**
+   - Visit [https://whatismyipaddress.com/](https://whatismyipaddress.com/)
+5. **Access your server from outside:**
+   - `http://<your-public-ip>:8080`
+
+**Security Note:**
+- The default setup has no HTTPS and uses a demo password. For real-world use, change the password and consider using a VPN or reverse proxy with HTTPS (see below).
+
+### **B. (Optional) Use a Dynamic DNS Service**
+
+If your home IP changes, use a free Dynamic DNS service (e.g., [DuckDNS](https://www.duckdns.org/)):
+1. Register a subdomain (e.g., `mytower.duckdns.org`).
+2. Set up the DuckDNS client on your Pi to keep your IP updated.
+3. Access your server at `http://mytower.duckdns.org:8080`.
+
+### **C. (Optional) Add HTTPS with Caddy**
+
+For secure access, use [Caddy](https://caddyserver.com/) as a reverse proxy:
+1. Install Caddy:
+   ```bash
+   sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo apt-key add -
+   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+   sudo apt update
+   sudo apt install caddy
+   ```
+2. Edit `/etc/caddy/Caddyfile`:
+   ```
+   mytower.duckdns.org {
+       reverse_proxy localhost:8080
+   }
+   ```
+3. Restart Caddy:
+   ```bash
+   sudo systemctl restart caddy
+   ```
+4. Forward port 80/443 on your router to your Pi for HTTPS.
+
+---
+
+## 6. Run on Boot (Optional)
+
+Docker containers started with `--restart unless-stopped` will auto-start on boot:
+```bash
+# Stop and remove if already running
+sudo docker rm -f tower-of-song
+# Start with restart policy
+sudo docker run -d \
+  --name tower-of-song \
+  --restart unless-stopped \
+  -p 8080:8080 \
+  -v /path/to/your/music:/app/music:ro \
+  -v $(pwd)/config.json:/app/config.json:ro \
+  tower-of-song
+```
+
+---
+
+## 7. Using the Service
+
+- Open the test client at `http://<your-public-ip>:8080` or your DuckDNS domain.
+- Log in with your credentials.
+- Browse, search, and stream your music from anywhere!
+
+---
+
+## 8. Security Recommendations
+
+- **Change the default password** in the source code and rebuild.
+- **Do not expose without HTTPS** for sensitive use.
+- **Consider a VPN** for private access.
+- **Keep your Pi and Docker updated.**
+
+---
+
+## 9. Troubleshooting
+
+- **Can't access from outside?**
+  - Double-check port forwarding and your Pi's IP.
+  - Make sure your ISP doesn't block incoming ports.
+- **Music not found?**
+  - Check your `config.json` path and Docker volume mount.
+- **Performance issues?**
+  - Use Ethernet instead of WiFi for best results.
+
+---
+
+## 10. Uninstalling
+
+```bash
+sudo docker rm -f tower-of-song
+sudo docker rmi tower-of-song
+```
+
+---
+
+Enjoy your private home music streaming service! 

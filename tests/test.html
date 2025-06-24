@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music API Test Client</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         let authToken = null;
+        let randomLoop = false;
+        let audio = null;
         function setControlsEnabled(enabled) {
             document.getElementById("statsBtn").disabled = !enabled;
             document.getElementById("listBtn").disabled = !enabled;
@@ -13,6 +16,8 @@
             document.getElementById("id").disabled = !enabled;
             document.getElementById("streamBtn").disabled = !enabled;
             document.getElementById("searchQuery").disabled = !enabled;
+            document.getElementById("randomBtn").disabled = !enabled;
+            document.getElementById("stopBtn").disabled = !enabled;
         }
         async function login() {
             const username = document.getElementById("username").value;
@@ -40,47 +45,90 @@
             let data = await response.json();
             document.getElementById("output").innerText = JSON.stringify(data, null, 2);
         }
-        function streamAudio() {
+        function streamAudio(id) {
             if (!authToken) return;
-            let id = document.getElementById("id").value;
-            let audio = document.getElementById("audioPlayer");
-            audio.src = `http://localhost:8080/stream?id=${encodeURIComponent(id)}`;
+            if (!id) id = document.getElementById("id").value;
+            audio = document.getElementById("audioPlayer");
+            audio.src = `http://localhost:8080/stream?id=${encodeURIComponent(id)}&token=${encodeURIComponent(authToken)}`;
             audio.setAttribute("crossorigin", "anonymous");
             audio.load();
-            // Set Authorization header for audio streaming
-            fetch(audio.src, { headers: { "Authorization": authToken } })
-                .then(resp => {
-                    if (resp.ok) {
-                        audio.src = audio.src + "&token=" + encodeURIComponent(authToken);
-                        audio.play();
-                    } else {
-                        document.getElementById("output").innerText = "Unauthorized or error streaming audio.";
-                    }
+            audio.play();
+        }
+        async function randomStreamLoop() {
+            randomLoop = true;
+            while (randomLoop) {
+                // Get total files
+                let statsResp = await fetch("http://localhost:8080/stats", {
+                    headers: { "Authorization": authToken }
                 });
+                let stats = await statsResp.json();
+                let total = stats.total_files;
+                if (!total || total < 1) {
+                    document.getElementById("output").innerText = "No files available.";
+                    break;
+                }
+                // Pick random index (1-based id)
+                let randomId = Math.floor(Math.random() * total) + 1;
+                streamAudio(randomId);
+                await new Promise((resolve) => {
+                    audio.onended = () => resolve();
+                    audio.onerror = () => resolve();
+                });
+            }
+        }
+        function startRandom() {
+            if (!authToken) return;
+            document.getElementById("output").innerText = "Random streaming started.";
+            randomStreamLoop();
+        }
+        function stopRandom() {
+            randomLoop = false;
+            if (audio) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+            document.getElementById("output").innerText = "Random streaming stopped.";
         }
         window.onload = function() {
             setControlsEnabled(false);
+            audio = document.getElementById("audioPlayer");
         };
     </script>
 </head>
-<body>
-    <h2>Music API Test Client</h2>
-    <div>
-        <label>Username: <input type="text" id="username" value="admin"></label>
-        <label>Password: <input type="password" id="password" value="password"></label>
-        <button onclick="login()">Login</button>
-        <span id="loginStatus" style="margin-left:10px;"></span>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center py-8">
+    <div class="w-full max-w-xl bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-bold mb-4 text-center text-indigo-700">Tower of Song - Music API Test Client</h2>
+        <div class="flex flex-col md:flex-row items-center gap-2 mb-4">
+            <label class="flex-1">Username:
+                <input type="text" id="username" value="admin" class="border rounded px-2 py-1 w-full" autocomplete="username">
+            </label>
+            <label class="flex-1">Password:
+                <input type="password" id="password" value="password" class="border rounded px-2 py-1 w-full" autocomplete="current-password">
+            </label>
+            <button onclick="login()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">Login</button>
+        </div>
+        <div class="mb-2 text-green-600" id="loginStatus"></div>
+        <hr class="my-4">
+        <div class="flex flex-wrap gap-2 mb-4 justify-center">
+            <button id="statsBtn" onclick="testAPI('http://localhost:8080/stats')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Get Stats</button>
+            <button id="listBtn" onclick="testAPI('http://localhost:8080/list')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">List Files</button>
+            <input type="text" id="searchQuery" placeholder="Enter keyword" class="border rounded px-2 py-1">
+            <button id="searchBtn" onclick="testAPI('http://localhost:8080/search?q=' + document.getElementById('searchQuery').value)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Search</button>
+            <button id="randomBtn" onclick="startRandom()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded">Random</button>
+            <button id="stopBtn" onclick="stopRandom()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Stop</button>
+        </div>
+        <div class="mb-4">
+            <h3 class="font-semibold mb-1">Stream Audio</h3>
+            <div class="flex gap-2 items-center">
+                <input type="text" id="id" placeholder="Enter file id" class="border rounded px-2 py-1">
+                <button id="streamBtn" onclick="streamAudio()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">Stream</button>
+            </div>
+            <audio id="audioPlayer" controls class="w-full mt-2 rounded shadow"></audio>
+        </div>
+        <div>
+            <h3 class="font-semibold mb-1">API Response</h3>
+            <pre id="output" class="border rounded bg-gray-50 p-3 text-sm overflow-x-auto"></pre>
+        </div>
     </div>
-    <hr>
-    <button id="statsBtn" onclick="testAPI('http://localhost:8080/stats')">Get Stats</button>
-    <button id="listBtn" onclick="testAPI('http://localhost:8080/list')">List Files</button>
-    <input type="text" id="searchQuery" placeholder="Enter keyword">
-    <button id="searchBtn" onclick="testAPI('http://localhost:8080/search?q=' + document.getElementById('searchQuery').value)">Search</button>
-    <h3>Stream Audio</h3>
-    <input type="text" id="id" placeholder="Enter file id">
-    <button id="streamBtn" onclick="streamAudio()">Stream</button>
-    <audio id="audioPlayer" controls></audio>
-    <h3>API Response</h3>
-    <pre id="output" style="border:1px solid #000; padding:10px; background:#f4f4f4; white-space:pre-wrap;"></pre>
 </body>
 </html>
