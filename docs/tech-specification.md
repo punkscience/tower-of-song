@@ -83,6 +83,25 @@ CREATE TABLE music (
 - **Response**: Audio stream with `audio/mpeg` content type
 - **Features**: Direct file streaming, no transcoding
 
+#### `/trackinfo` - Get Track Details
+- **Method**: GET
+- **Parameters**: `id` (track id)
+- **Authentication**: Required
+- **Response**: JSON object with id, path, title, artist, album
+- **Example**:
+  ```json
+  {
+    "id": "123",
+    "path": "/app/music/artist/album/song.mp3",
+    "title": "Song Title",
+    "artist": "Artist Name",
+    "album": "Album Name"
+  }
+  ```
+- **Errors**:
+  - 400 if id is missing
+  - 404 if track not found
+
 ### 3. Cross-Origin Resource Sharing (CORS)
 
 All API endpoints support CORS with the following headers:

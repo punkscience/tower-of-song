@@ -64,4 +64,5 @@ Edit `config.json` to specify your music folders and credentials:
 
 - For API details, architecture, and security, see [docs/tech-specification.md](tech-specification.md).
 - For Raspberry Pi setup, see [docs/raspberry-pi-setup.md](raspberry-pi-setup.md).
-- For publishing the Docker image, see [docs/publishing-docker-image.md](publishing-docker-image.md). 
+- For publishing the Docker image, see [docs/publishing-docker-image.md](publishing-docker-image.md).
+- To get details about a single track by id, use the `/trackinfo?id=...` endpoint (see API reference). 

@@ -266,6 +266,38 @@ func storeMetadata(path string) {
 	}
 }
 
+func getTrackInfo(w http.ResponseWriter, r *http.Request) {
+	enableCORS(w)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if !requireAuth(w, r) {
+		return
+	}
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing id parameter", http.StatusBadRequest)
+		return
+	}
+	row := db.QueryRow("SELECT id, path, title, artist, album FROM music WHERE id = ?", id)
+	var tid int
+	var path, title, artist, album string
+	err := row.Scan(&tid, &path, &title, &artist, &album)
+	if err != nil {
+		http.Error(w, "Track not found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"id":     fmt.Sprint(tid),
+		"path":   path,
+		"title":  title,
+		"artist": artist,
+		"album":  album,
+	})
+}
+
 func main() {
 	fmt.Println("Starting Tower of Song server...")
 	if err := loadConfig(); err != nil {
@@ -287,6 +319,7 @@ func main() {
 	http.HandleFunc("/list", listFiles)
 	http.HandleFunc("/search", searchFiles)
 	http.HandleFunc("/stream", streamFile)
+	http.HandleFunc("/trackinfo", getTrackInfo)
 	fmt.Println("Server running on :8080")
 	http.ListenAndServe(":8080", nil)
 }

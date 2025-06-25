@@ -9,6 +9,7 @@
         let authToken = null;
         let randomLoop = false;
         let audio = null;
+        let currentTrackId = null;
         function setControlsEnabled(enabled) {
             document.getElementById("statsBtn").disabled = !enabled;
             document.getElementById("listBtn").disabled = !enabled;
@@ -45,14 +46,32 @@
             let data = await response.json();
             document.getElementById("output").innerText = JSON.stringify(data, null, 2);
         }
+        async function updateNowPlaying(id) {
+            if (!authToken || !id) return;
+            let response = await fetch(`http://localhost:8080/trackinfo?id=${encodeURIComponent(id)}`, {
+                headers: { "Authorization": authToken }
+            });
+            if (!response.ok) {
+                document.getElementById("nowArtist").innerText = "";
+                document.getElementById("nowAlbum").innerText = "";
+                document.getElementById("nowTitle").innerText = "";
+                return;
+            }
+            let track = await response.json();
+            document.getElementById("nowArtist").innerText = track.artist || "";
+            document.getElementById("nowAlbum").innerText = track.album || "";
+            document.getElementById("nowTitle").innerText = track.title || "";
+        }
         function streamAudio(id) {
             if (!authToken) return;
             if (!id) id = document.getElementById("id").value;
+            currentTrackId = id;
             audio = document.getElementById("audioPlayer");
             audio.src = `http://localhost:8080/stream?id=${encodeURIComponent(id)}&token=${encodeURIComponent(authToken)}`;
             audio.setAttribute("crossorigin", "anonymous");
             audio.load();
             audio.play();
+            updateNowPlaying(id);
         }
         async function randomStreamLoop() {
             randomLoop = true;
@@ -124,6 +143,14 @@
                 <button id="streamBtn" onclick="streamAudio()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">Stream</button>
             </div>
             <audio id="audioPlayer" controls class="w-full mt-2 rounded shadow"></audio>
+        </div>
+        <div class="mb-4">
+            <h3 class="font-semibold mb-1">Now Playing</h3>
+            <div class="flex flex-col gap-1 bg-gray-50 rounded p-3 border">
+                <div><span class="font-semibold">Artist:</span> <span id="nowArtist"></span></div>
+                <div><span class="font-semibold">Album:</span> <span id="nowAlbum"></span></div>
+                <div><span class="font-semibold">Track:</span> <span id="nowTitle"></span></div>
+            </div>
         </div>
         <div>
             <h3 class="font-semibold mb-1">API Response</h3>
