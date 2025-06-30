@@ -255,7 +255,7 @@ go build -o tower-of-song
 
 ### Test Client
 
-Located in `tests/test.html`, provides a simple web interface for:
+Located in `templates/index.html`, provides a simple web interface for:
 - Testing all API endpoints
 - Audio streaming functionality
 - JSON response visualization

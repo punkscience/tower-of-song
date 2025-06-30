@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/bogem/id3v2"
+	"github.com/gin-gonic/gin"
 	_ "modernc.org/sqlite"
 )
 
@@ -347,12 +348,36 @@ func main() {
 			time.Sleep(24 * time.Hour)
 		}
 	}()
-	http.HandleFunc("/login", login)
-	http.HandleFunc("/stats", getStats)
-	http.HandleFunc("/list", listFiles)
-	http.HandleFunc("/search", searchFiles)
-	http.HandleFunc("/stream", streamFile)
-	http.HandleFunc("/trackinfo", getTrackInfo)
+
+	r := gin.Default()
+
+	// Serve the test client as the homepage and as /index.html
+	r.StaticFile("/", "templates/index.html")
+	r.StaticFile("/index.html", "templates/index.html")
+
+	// Serve static assets if needed (e.g., /templates/)
+	r.Static("/templates", "templates")
+
+	// CORS middleware for API endpoints
+	r.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS, POST")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(200)
+			return
+		}
+		c.Next()
+	})
+
+	// API endpoints
+	r.POST("/login", gin.WrapF(login))
+	r.GET("/stats", gin.WrapF(getStats))
+	r.GET("/list", gin.WrapF(listFiles))
+	r.GET("/search", gin.WrapF(searchFiles))
+	r.GET("/stream", gin.WrapF(streamFile))
+	r.GET("/trackinfo", gin.WrapF(getTrackInfo))
+
 	fmt.Println("Server running on :8080")
-	http.ListenAndServe(":8080", nil)
+	r.Run(":8080")
 }

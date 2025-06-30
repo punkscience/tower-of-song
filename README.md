@@ -78,7 +78,7 @@ See [docs/tech-specification.md](docs/tech-specification.md) for full API detail
 
 ## Test Client
 
-A simple HTML client is provided in `tests/test.html`:
+A simple HTML client is provided in `templates/index.html`:
 - Login with your credentials
 - Test all API endpoints
 - Stream audio directly in your browser
