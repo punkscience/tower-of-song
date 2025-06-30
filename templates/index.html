@@ -10,7 +10,6 @@
         let randomLoop = false;
         let audio = null;
         let currentTrackId = null;
-        let serverUrl = "http://localhost:8080";
         
         function setControlsEnabled(enabled) {
             document.getElementById("statsBtn").disabled = !enabled;
@@ -23,20 +22,10 @@
             document.getElementById("stopBtn").disabled = !enabled;
         }
         
-        function updateServerUrl() {
-            serverUrl = document.getElementById("serverUrl").value;
-            if (!serverUrl.startsWith("http://") && !serverUrl.startsWith("https://")) {
-                serverUrl = "http://" + serverUrl;
-            }
-            // Remove trailing slash if present
-            serverUrl = serverUrl.replace(/\/$/, "");
-        }
-        
         async function login() {
-            updateServerUrl();
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
-            const resp = await fetch(`${serverUrl}/login`, {
+            const resp = await fetch(`/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password })
@@ -54,8 +43,7 @@
         
         async function testAPI(endpoint) {
             if (!authToken) return;
-            updateServerUrl();
-            let response = await fetch(`${serverUrl}${endpoint}`, {
+            let response = await fetch(endpoint, {
                 headers: { "Authorization": authToken }
             });
             let data = await response.json();
@@ -64,8 +52,7 @@
         
         async function updateNowPlaying(id) {
             if (!authToken || !id) return;
-            updateServerUrl();
-            let response = await fetch(`${serverUrl}/trackinfo?id=${encodeURIComponent(id)}`, {
+            let response = await fetch(`/trackinfo?id=${encodeURIComponent(id)}`, {
                 headers: { "Authorization": authToken }
             });
             if (!response.ok) {
@@ -83,10 +70,9 @@
         function streamAudio(id) {
             if (!authToken) return;
             if (!id) id = document.getElementById("id").value;
-            updateServerUrl();
             currentTrackId = id;
             audio = document.getElementById("audioPlayer");
-            audio.src = `${serverUrl}/stream?id=${encodeURIComponent(id)}&token=${encodeURIComponent(authToken)}`;
+            audio.src = `/stream?id=${encodeURIComponent(id)}&token=${encodeURIComponent(authToken)}`;
             audio.setAttribute("crossorigin", "anonymous");
             audio.load();
             audio.play();
@@ -97,7 +83,7 @@
             randomLoop = true;
             while (randomLoop) {
                 // Get total files
-                let statsResp = await fetch(`${serverUrl}/stats`, {
+                let statsResp = await fetch(`/stats`, {
                     headers: { "Authorization": authToken }
                 });
                 let stats = await statsResp.json();
@@ -140,11 +126,6 @@
 <body class="bg-gray-100 min-h-screen flex flex-col items-center py-8">
     <div class="w-full max-w-xl bg-white rounded-lg shadow-lg p-8">
         <h2 class="text-2xl font-bold mb-4 text-center text-indigo-700">Tower of Song - Music API Test Client</h2>
-        <div class="mb-4">
-            <label class="block mb-2">Server URL:
-                <input type="text" id="serverUrl" value="http://localhost:8080" class="border rounded px-2 py-1 w-full" placeholder="http://localhost:8080">
-            </label>
-        </div>
         <div class="flex flex-col md:flex-row items-center gap-2 mb-4">
             <label class="flex-1">Username:
                 <input type="text" id="username" value="admin" class="border rounded px-2 py-1 w-full" autocomplete="username">
