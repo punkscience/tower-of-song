@@ -12,6 +12,9 @@ RUN go mod download
 # Copy the application source code
 COPY . .
 
+# Copy the templates directory explicitly for static file serving
+COPY ./templates /app/templates
+
 # Build the application
 RUN go build -o tower-of-song
 
@@ -28,6 +31,8 @@ RUN mkdir -p /app/data
 
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/tower-of-song /app/tower-of-song
+# Copy the templates directory from the builder stage
+COPY --from=builder /app/templates /app/templates
 
 # Ensure the binary is executable
 RUN chmod +x /app/tower-of-song
