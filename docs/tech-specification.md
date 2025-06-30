@@ -9,7 +9,7 @@ Tower of Song is a lightweight, self-hosted music streaming server written in Go
 ### Technology Stack
 
 - **Backend**: Go 1.22.4
-- **Database**: SQLite (in-memory with WAL mode)
+- **Database**: SQLite (persistent on-disk at `/app/data/towerofsong.db`, WAL mode)
 - **Audio Metadata**: ID3v2 tags via `github.com/bogem/id3v2`
 - **Containerization**: Docker with multi-stage build
 - **Frontend**: HTML/JavaScript test client
@@ -26,7 +26,7 @@ Tower of Song is a lightweight, self-hosted music streaming server written in Go
                               ▼
                        ┌─────────────────┐
                        │   SQLite DB     │
-                       │   (In-Memory)   │
+                       │   (Persistent)  │
                        └─────────────────┘
 ```
 
@@ -180,9 +180,9 @@ All API endpoints support CORS with the following headers:
 
 ### Database Management
 
-- **Type**: In-memory SQLite database
+- **Type**: Persistent SQLite database file at `/app/data/towerofsong.db`
 - **Mode**: WAL (Write-Ahead Logging) enabled for better concurrency
-- **Persistence**: Data is lost on server restart
+- **Persistence**: Data is preserved across server restarts and container reboots
 - **Thread Safety**: Mutex-protected database operations
 
 ### File Processing

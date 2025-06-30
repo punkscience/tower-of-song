@@ -13,8 +13,14 @@ docker build -t tower-of-song .
 
 **Run the server:**
 ```bash
-docker run -p 8080:8080 -v /path/to/music:/app/music -v $(pwd)/config.json:/app/config.json tower-of-song
+docker run -p 8080:8080 \
+  -v /path/to/music:/app/music \
+  -v $(pwd)/config.json:/app/config.json \
+  -v towerofsong-data:/app/data \
+  tower-of-song
 ```
+
+- The `-v towerofsong-data:/app/data` ensures your database is stored persistently and survives container restarts.
 
 **Stop the server:**
 ```bash

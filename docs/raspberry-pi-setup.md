@@ -46,19 +46,7 @@ This guide will walk you through installing, configuring, and exposing the Tower
 
 ---
 
-## 3. Configure Your Music Folder
-
-1. **Edit `config.json`:**
-   ```json
-   {
-     "music_folders": ["/path/to/your/music"]
-   }
-   ```
-   - Replace `/path/to/your/music` with your actual music directory (e.g., `/media/pi/MUSIC`).
-
----
-
-## 4. Build and Run with Docker
+## 3. Build and Run with Docker
 
 1. **Build the Docker image:**
    ```bash
@@ -81,7 +69,7 @@ This guide will walk you through installing, configuring, and exposing the Tower
 
 ---
 
-## 5. Make It Accessible from the Internet
+## 4. Make It Accessible from the Internet
 
 ### **A. Port Forwarding (Simplest Method)**
 
@@ -129,7 +117,7 @@ For secure access, use [Caddy](https://caddyserver.com/) as a reverse proxy:
 
 ---
 
-## 6. Run on Boot (Optional)
+## 5. Run on Boot (Optional)
 
 Docker containers started with `--restart unless-stopped` will auto-start on boot:
 ```bash
@@ -147,7 +135,7 @@ sudo docker run -d \
 
 ---
 
-## 7. Using the Service
+## 6. Using the Service
 
 - Open the test client at `http://<your-public-ip>:8080` or your DuckDNS domain.
 - Log in with your credentials.
@@ -155,7 +143,7 @@ sudo docker run -d \
 
 ---
 
-## 8. Security Recommendations
+## 7. Security Recommendations
 
 - **Change the default password** in the source code and rebuild.
 - **Do not expose without HTTPS** for sensitive use.
@@ -164,7 +152,7 @@ sudo docker run -d \
 
 ---
 
-## 9. Troubleshooting
+## 8. Troubleshooting
 
 - **Can't access from outside?**
   - Double-check port forwarding and your Pi's IP.
@@ -176,7 +164,7 @@ sudo docker run -d \
 
 ---
 
-## 10. Uninstalling
+## 9. Uninstalling
 
 ```bash
 sudo docker rm -f tower-of-song

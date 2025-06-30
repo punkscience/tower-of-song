@@ -23,6 +23,9 @@ RUN apt update && apt install -y ca-certificates sqlite3 && rm -rf /var/lib/apt/
 
 WORKDIR /app
 
+# Ensure persistent data directory exists
+RUN mkdir -p /app/data
+
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/tower-of-song /app/tower-of-song
 
@@ -34,6 +37,9 @@ COPY ./config.json /app/config.json
 
 # Expose the port our Go server listens on
 EXPOSE 8080
+
+# Declare a volume for persistent database storage
+VOLUME ["/app/data"]
 
 # Run the server
 CMD ["/app/tower-of-song"]

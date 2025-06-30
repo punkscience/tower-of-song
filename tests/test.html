@@ -10,6 +10,8 @@
         let randomLoop = false;
         let audio = null;
         let currentTrackId = null;
+        let serverUrl = "http://localhost:8080";
+        
         function setControlsEnabled(enabled) {
             document.getElementById("statsBtn").disabled = !enabled;
             document.getElementById("listBtn").disabled = !enabled;
@@ -20,10 +22,21 @@
             document.getElementById("randomBtn").disabled = !enabled;
             document.getElementById("stopBtn").disabled = !enabled;
         }
+        
+        function updateServerUrl() {
+            serverUrl = document.getElementById("serverUrl").value;
+            if (!serverUrl.startsWith("http://") && !serverUrl.startsWith("https://")) {
+                serverUrl = "http://" + serverUrl;
+            }
+            // Remove trailing slash if present
+            serverUrl = serverUrl.replace(/\/$/, "");
+        }
+        
         async function login() {
+            updateServerUrl();
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
-            const resp = await fetch("http://localhost:8080/login", {
+            const resp = await fetch(`${serverUrl}/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password })
@@ -38,17 +51,21 @@
                 setControlsEnabled(false);
             }
         }
+        
         async function testAPI(endpoint) {
             if (!authToken) return;
-            let response = await fetch(endpoint, {
+            updateServerUrl();
+            let response = await fetch(`${serverUrl}${endpoint}`, {
                 headers: { "Authorization": authToken }
             });
             let data = await response.json();
             document.getElementById("output").innerText = JSON.stringify(data, null, 2);
         }
+        
         async function updateNowPlaying(id) {
             if (!authToken || !id) return;
-            let response = await fetch(`http://localhost:8080/trackinfo?id=${encodeURIComponent(id)}`, {
+            updateServerUrl();
+            let response = await fetch(`${serverUrl}/trackinfo?id=${encodeURIComponent(id)}`, {
                 headers: { "Authorization": authToken }
             });
             if (!response.ok) {
@@ -62,22 +79,25 @@
             document.getElementById("nowAlbum").innerText = track.album || "";
             document.getElementById("nowTitle").innerText = track.title || "";
         }
+        
         function streamAudio(id) {
             if (!authToken) return;
             if (!id) id = document.getElementById("id").value;
+            updateServerUrl();
             currentTrackId = id;
             audio = document.getElementById("audioPlayer");
-            audio.src = `http://localhost:8080/stream?id=${encodeURIComponent(id)}&token=${encodeURIComponent(authToken)}`;
+            audio.src = `${serverUrl}/stream?id=${encodeURIComponent(id)}&token=${encodeURIComponent(authToken)}`;
             audio.setAttribute("crossorigin", "anonymous");
             audio.load();
             audio.play();
             updateNowPlaying(id);
         }
+        
         async function randomStreamLoop() {
             randomLoop = true;
             while (randomLoop) {
                 // Get total files
-                let statsResp = await fetch("http://localhost:8080/stats", {
+                let statsResp = await fetch(`${serverUrl}/stats`, {
                     headers: { "Authorization": authToken }
                 });
                 let stats = await statsResp.json();
@@ -95,11 +115,13 @@
                 });
             }
         }
+        
         function startRandom() {
             if (!authToken) return;
             document.getElementById("output").innerText = "Random streaming started.";
             randomStreamLoop();
         }
+        
         function stopRandom() {
             randomLoop = false;
             if (audio) {
@@ -108,6 +130,7 @@
             }
             document.getElementById("output").innerText = "Random streaming stopped.";
         }
+        
         window.onload = function() {
             setControlsEnabled(false);
             audio = document.getElementById("audioPlayer");
@@ -117,6 +140,11 @@
 <body class="bg-gray-100 min-h-screen flex flex-col items-center py-8">
     <div class="w-full max-w-xl bg-white rounded-lg shadow-lg p-8">
         <h2 class="text-2xl font-bold mb-4 text-center text-indigo-700">Tower of Song - Music API Test Client</h2>
+        <div class="mb-4">
+            <label class="block mb-2">Server URL:
+                <input type="text" id="serverUrl" value="http://localhost:8080" class="border rounded px-2 py-1 w-full" placeholder="http://localhost:8080">
+            </label>
+        </div>
         <div class="flex flex-col md:flex-row items-center gap-2 mb-4">
             <label class="flex-1">Username:
                 <input type="text" id="username" value="admin" class="border rounded px-2 py-1 w-full" autocomplete="username">
@@ -129,10 +157,10 @@
         <div class="mb-2 text-green-600" id="loginStatus"></div>
         <hr class="my-4">
         <div class="flex flex-wrap gap-2 mb-4 justify-center">
-            <button id="statsBtn" onclick="testAPI('http://localhost:8080/stats')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Get Stats</button>
-            <button id="listBtn" onclick="testAPI('http://localhost:8080/list')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">List Files</button>
+            <button id="statsBtn" onclick="testAPI('/stats')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Get Stats</button>
+            <button id="listBtn" onclick="testAPI('/list')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">List Files</button>
             <input type="text" id="searchQuery" placeholder="Enter keyword" class="border rounded px-2 py-1">
-            <button id="searchBtn" onclick="testAPI('http://localhost:8080/search?q=' + document.getElementById('searchQuery').value)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Search</button>
+            <button id="searchBtn" onclick="testAPI('/search?q=' + document.getElementById('searchQuery').value)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Search</button>
             <button id="randomBtn" onclick="startRandom()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded">Random</button>
             <button id="stopBtn" onclick="stopRandom()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Stop</button>
         </div>

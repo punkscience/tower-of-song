@@ -96,9 +96,16 @@ func loadConfig() error {
 	return decoder.Decode(&config)
 }
 
+func ensureDataDir() error {
+	return os.MkdirAll("/app/data", 0755)
+}
+
 func initDB() error {
+	if err := ensureDataDir(); err != nil {
+		return err
+	}
 	var err error
-	db, err = sql.Open("sqlite", ":memory:")
+	db, err = sql.Open("sqlite", "/app/data/towerofsong.db")
 	if err != nil {
 		return err
 	}
@@ -110,7 +117,7 @@ func initDB() error {
 		return err
 	}
 
-	_, err = db.Exec(`CREATE TABLE music (
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS music (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		path TEXT UNIQUE,
 		title TEXT,
@@ -231,6 +238,32 @@ func scanMusicFolders() {
 			}
 			return nil
 		})
+	}
+
+	// After scanning, clean up missing files from the database
+	log.Println("Checking for missing files in database...")
+	rows, err := db.Query("SELECT id, path FROM music")
+	if err != nil {
+		log.Println("Error querying music table for cleanup:", err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int
+		var path string
+		if err := rows.Scan(&id, &path); err != nil {
+			log.Println("Error scanning row during cleanup:", err)
+			continue
+		}
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			log.Printf("File missing on disk, removing from database: %s (id=%d)\n", path, id)
+			_, delErr := db.Exec("DELETE FROM music WHERE id = ?", id)
+			if delErr != nil {
+				log.Printf("Error deleting %s (id=%d) from database: %v\n", path, id, delErr)
+			}
+		} else {
+			log.Printf("File exists: %s (id=%d)", path, id)
+		}
 	}
 }
 
