@@ -225,12 +225,12 @@ func streamFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func scanMusicFolders() {
+	log.Println("Scanning music folders...")
 	mutex.Lock()
 	defer mutex.Unlock()
 
 	for _, folder := range config.MusicFolders {
 		filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
-			log.Println("Scanning: ", path)
 			if err != nil {
 				return err
 			}
@@ -262,8 +262,6 @@ func scanMusicFolders() {
 			if delErr != nil {
 				log.Printf("Error deleting %s (id=%d) from database: %v\n", path, id, delErr)
 			}
-		} else {
-			log.Printf("File exists: %s (id=%d)", path, id)
 		}
 	}
 }

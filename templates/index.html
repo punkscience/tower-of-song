@@ -22,6 +22,15 @@
             document.getElementById("stopBtn").disabled = !enabled;
         }
         
+        function showMainApp() {
+            document.getElementById("loginSection").style.display = "none";
+            document.getElementById("mainAppSection").style.display = "block";
+        }
+        function showLogin() {
+            document.getElementById("loginSection").style.display = "block";
+            document.getElementById("mainAppSection").style.display = "none";
+        }
+        
         async function login() {
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
@@ -35,6 +44,7 @@
                 authToken = data.token;
                 setControlsEnabled(true);
                 document.getElementById("loginStatus").innerText = "Login successful!";
+                showMainApp();
             } else {
                 document.getElementById("loginStatus").innerText = "Login failed.";
                 setControlsEnabled(false);
@@ -120,50 +130,55 @@
         window.onload = function() {
             setControlsEnabled(false);
             audio = document.getElementById("audioPlayer");
+            showLogin();
         };
     </script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center py-8">
     <div class="w-full max-w-xl bg-white rounded-lg shadow-lg p-8">
         <h2 class="text-2xl font-bold mb-4 text-center text-indigo-700">Tower of Song - Music API Test Client</h2>
-        <div class="flex flex-col md:flex-row items-center gap-2 mb-4">
-            <label class="flex-1">Username:
-                <input type="text" id="username" value="admin" class="border rounded px-2 py-1 w-full" autocomplete="username">
-            </label>
-            <label class="flex-1">Password:
-                <input type="password" id="password" value="password" class="border rounded px-2 py-1 w-full" autocomplete="current-password">
-            </label>
-            <button onclick="login()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">Login</button>
-        </div>
-        <div class="mb-2 text-green-600" id="loginStatus"></div>
-        <hr class="my-4">
-        <div class="flex flex-wrap gap-2 mb-4 justify-center">
-            <button id="statsBtn" onclick="testAPI('/stats')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Get Stats</button>
-            <button id="listBtn" onclick="testAPI('/list')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">List Files</button>
-            <input type="text" id="searchQuery" placeholder="Enter keyword" class="border rounded px-2 py-1">
-            <button id="searchBtn" onclick="testAPI('/search?q=' + document.getElementById('searchQuery').value)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Search</button>
-            <button id="randomBtn" onclick="startRandom()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded">Random</button>
-            <button id="stopBtn" onclick="stopRandom()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Stop</button>
-        </div>
-        <div class="mb-4">
-            <h3 class="font-semibold mb-1">Stream Audio</h3>
-            <div class="flex gap-2 items-center">
-                <input type="text" id="id" placeholder="Enter file id" class="border rounded px-2 py-1">
-                <button id="streamBtn" onclick="streamAudio()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">Stream</button>
+        <div id="loginSection">
+            <div class="flex flex-col md:flex-row items-center gap-2 mb-4">
+                <label class="flex-1">Username:
+                    <input type="text" id="username" value="admin" class="border rounded px-2 py-1 w-full" autocomplete="username">
+                </label>
+                <label class="flex-1">Password:
+                    <input type="password" id="password" value="password" class="border rounded px-2 py-1 w-full" autocomplete="current-password">
+                </label>
+                <button onclick="login()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">Login</button>
             </div>
-            <audio id="audioPlayer" controls class="w-full mt-2 rounded shadow"></audio>
+            <div class="mb-2 text-green-600" id="loginStatus"></div>
         </div>
-        <div class="mb-4">
-            <h3 class="font-semibold mb-1">Now Playing</h3>
-            <div class="flex flex-col gap-1 bg-gray-50 rounded p-3 border">
-                <div><span class="font-semibold">Artist:</span> <span id="nowArtist"></span></div>
-                <div><span class="font-semibold">Album:</span> <span id="nowAlbum"></span></div>
-                <div><span class="font-semibold">Track:</span> <span id="nowTitle"></span></div>
+        <div id="mainAppSection" style="display:none;">
+            <hr class="my-4">
+            <div class="flex flex-wrap gap-2 mb-4 justify-center">
+                <button id="statsBtn" onclick="testAPI('/stats')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Get Stats</button>
+                <button id="listBtn" onclick="testAPI('/list')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">List Files</button>
+                <input type="text" id="searchQuery" placeholder="Enter keyword" class="border rounded px-2 py-1">
+                <button id="searchBtn" onclick="testAPI('/search?q=' + document.getElementById('searchQuery').value)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Search</button>
+                <button id="randomBtn" onclick="startRandom()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded">Random</button>
+                <button id="stopBtn" onclick="stopRandom()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Stop</button>
             </div>
-        </div>
-        <div>
-            <h3 class="font-semibold mb-1">API Response</h3>
-            <pre id="output" class="border rounded bg-gray-50 p-3 text-sm overflow-x-auto"></pre>
+            <div class="mb-4">
+                <h3 class="font-semibold mb-1">Stream Audio</h3>
+                <div class="flex gap-2 items-center">
+                    <input type="text" id="id" placeholder="Enter file id" class="border rounded px-2 py-1">
+                    <button id="streamBtn" onclick="streamAudio()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">Stream</button>
+                </div>
+                <audio id="audioPlayer" controls class="w-full mt-2 rounded shadow"></audio>
+            </div>
+            <div class="mb-4">
+                <h3 class="font-semibold mb-1">Now Playing</h3>
+                <div class="flex flex-col gap-1 bg-gray-50 rounded p-3 border">
+                    <div><span class="font-semibold">Artist:</span> <span id="nowArtist"></span></div>
+                    <div><span class="font-semibold">Album:</span> <span id="nowAlbum"></span></div>
+                    <div><span class="font-semibold">Track:</span> <span id="nowTitle"></span></div>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-semibold mb-1">API Response</h3>
+                <pre id="output" class="border rounded bg-gray-50 p-3 text-sm overflow-x-auto"></pre>
+            </div>
         </div>
     </div>
 </body>

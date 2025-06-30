@@ -135,7 +135,42 @@ sudo docker run -d \
 
 ---
 
-## 6. Using the Service
+## 6. (Optional) Secure Public Access with ngrok
+
+If you want to expose your music server securely to the internet with HTTPS and a valid certificate, you can use [ngrok](https://ngrok.com/):
+
+### **A. Install ngrok**
+
+1. Sign up for a free account at [ngrok.com](https://ngrok.com/).
+2. Download and install ngrok on your Raspberry Pi:
+   ```bash
+   wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-arm.zip
+   unzip ngrok-stable-linux-arm.zip
+   sudo mv ngrok /usr/local/bin/
+   ```
+3. Authenticate ngrok with your authtoken (from your ngrok dashboard):
+   ```bash
+   ngrok config add-authtoken <YOUR_NGROK_AUTHTOKEN>
+   ```
+
+### **B. Start a Secure Tunnel**
+
+1. Start your Docker container as usual (see above).
+2. In a new terminal, run:
+   ```bash
+   ngrok http 8080
+   ```
+3. ngrok will display a public HTTPS URL (e.g., `https://abcd1234.ngrok.io`).
+4. Open this URL in your browser from anywhere in the world. It will proxy securely to your Pi with a valid certificate.
+
+### **C. Notes and Tips**
+- The HTTPS URL will change each time unless you pay for a reserved domain.
+- You can use the ngrok dashboard to monitor traffic and connections.
+- This is a great way to share your music server securely without configuring your router or exposing your home IP.
+
+---
+
+## 7. Using the Service
 
 - Open the test client at `http://<your-public-ip>:8080` or your DuckDNS domain.
 - Log in with your credentials.
@@ -143,7 +178,7 @@ sudo docker run -d \
 
 ---
 
-## 7. Security Recommendations
+## 8. Security Recommendations
 
 - **Change the default password** in the source code and rebuild.
 - **Do not expose without HTTPS** for sensitive use.
@@ -152,7 +187,7 @@ sudo docker run -d \
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 - **Can't access from outside?**
   - Double-check port forwarding and your Pi's IP.
@@ -164,7 +199,7 @@ sudo docker run -d \
 
 ---
 
-## 9. Uninstalling
+## 10. Uninstalling
 
 ```bash
 sudo docker rm -f tower-of-song
