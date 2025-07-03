@@ -74,7 +74,7 @@ All API endpoints (except `/login`) require authentication.
 - `GET /search?q=...` — Search music (requires token)
 - `GET /stream?id=...` — Stream audio file (requires token)
 
-See [docs/tech-specification.md](docs/tech-specification.md) for full API details.
+See [docs/api-specification.md](docs/api-specification.md) for complete API documentation and examples.
 
 ## Test Client
 

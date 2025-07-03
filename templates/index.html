@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music API Test Client</title>
+    <title>Tower of Song API Client</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         let authToken = null;
@@ -31,6 +31,30 @@
             document.getElementById("mainAppSection").style.display = "none";
         }
         
+        // Cookie helpers
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days*24*60*60*1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+        function getCookie(name) {
+            let nameEQ = name + "=";
+            let ca = document.cookie.split(';');
+            for(let i=0;i < ca.length;i++) {
+                let c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+        function eraseCookie(name) {
+            document.cookie = name+'=; Max-Age=-99999999; path=/';
+        }
+        
         async function login() {
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
@@ -42,6 +66,7 @@
             if (resp.ok) {
                 const data = await resp.json();
                 authToken = data.token;
+                setCookie('tower_token', authToken, 7);
                 setControlsEnabled(true);
                 document.getElementById("loginStatus").innerText = "Login successful!";
                 showMainApp();
@@ -49,6 +74,14 @@
                 document.getElementById("loginStatus").innerText = "Login failed.";
                 setControlsEnabled(false);
             }
+        }
+        
+        function logout() {
+            authToken = null;
+            eraseCookie('tower_token');
+            setControlsEnabled(false);
+            showLogin();
+            document.getElementById("loginStatus").innerText = "Logged out.";
         }
         
         async function testAPI(endpoint) {
@@ -130,7 +163,15 @@
         window.onload = function() {
             setControlsEnabled(false);
             audio = document.getElementById("audioPlayer");
-            showLogin();
+            // Try to auto-login with cookie
+            const token = getCookie('tower_token');
+            if (token) {
+                authToken = token;
+                setControlsEnabled(true);
+                showMainApp();
+            } else {
+                showLogin();
+            }
         };
     </script>
 </head>
@@ -143,7 +184,7 @@
                     <input type="text" id="username" value="admin" class="border rounded px-2 py-1 w-full" autocomplete="username">
                 </label>
                 <label class="flex-1">Password:
-                    <input type="password" id="password" value="password" class="border rounded px-2 py-1 w-full" autocomplete="current-password">
+                    <input type="password" id="password" class="border rounded px-2 py-1 w-full" autocomplete="current-password">
                 </label>
                 <button onclick="login()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">Login</button>
             </div>
@@ -158,6 +199,7 @@
                 <button id="searchBtn" onclick="testAPI('/search?q=' + document.getElementById('searchQuery').value)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Search</button>
                 <button id="randomBtn" onclick="startRandom()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded">Random</button>
                 <button id="stopBtn" onclick="stopRandom()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Stop</button>
+                <button onclick="logout()" class="bg-gray-400 hover:bg-gray-600 text-white px-3 py-1 rounded">Logout</button>
             </div>
             <div class="mb-4">
                 <h3 class="font-semibold mb-1">Stream Audio</h3>

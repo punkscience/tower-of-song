@@ -71,31 +71,11 @@ This guide will walk you through installing, configuring, and exposing the Tower
 
 ## 4. Make It Accessible from the Internet
 
-### **A. Port Forwarding (Simplest Method)**
+### **A. Secure HTTPS Access with Caddy (Recommended for Custom Domains)**
 
-1. **Log in to your router's admin page.**
-2. **Find the Port Forwarding section.**
-3. **Forward external port 8080 to your Pi's internal IP and port 8080.**
-   - Example: `WAN:8080` → `192.168.1.42:8080`
-4. **Find your public IP address:**
-   - Visit [https://whatismyipaddress.com/](https://whatismyipaddress.com/)
-5. **Access your server from outside:**
-   - `http://<your-public-ip>:8080`
-
-**Security Note:**
-- The default setup has no HTTPS and uses a demo password. For real-world use, change the password and consider using a VPN or reverse proxy with HTTPS (see below).
-
-### **B. (Optional) Use a Dynamic DNS Service**
-
-If your home IP changes, use a free Dynamic DNS service (e.g., [DuckDNS](https://www.duckdns.org/)):
-1. Register a subdomain (e.g., `mytower.duckdns.org`).
-2. Set up the DuckDNS client on your Pi to keep your IP updated.
-3. Access your server at `http://mytower.duckdns.org:8080`.
-
-### **C. (Optional) Add HTTPS with Caddy**
-
-For secure access, use [Caddy](https://caddyserver.com/) as a reverse proxy:
-1. Install Caddy:
+1. **Get a domain name** (from any registrar).
+2. **Point your domain's DNS A record to your home IP address.**
+3. **Install Caddy:**
    ```bash
    sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo apt-key add -
@@ -103,17 +83,41 @@ For secure access, use [Caddy](https://caddyserver.com/) as a reverse proxy:
    sudo apt update
    sudo apt install caddy
    ```
-2. Edit `/etc/caddy/Caddyfile`:
+4. **Edit `/etc/caddy/Caddyfile`:**
    ```
-   mytower.duckdns.org {
+   yourdomain.com {
        reverse_proxy localhost:8080
    }
    ```
-3. Restart Caddy:
+5. **Restart Caddy:**
    ```bash
    sudo systemctl restart caddy
    ```
-4. Forward port 80/443 on your router to your Pi for HTTPS.
+6. **Forward port 80/443 on your router to your Pi for HTTPS.**
+7. **Access your server at `https://yourdomain.com` with a valid certificate.**
+
+### **B. (Alternative) Secure Public Access with ngrok**
+
+If you want a quick, secure tunnel without DNS or router config, use [ngrok](https://ngrok.com/):
+
+1. Sign up for a free account at [ngrok.com](https://ngrok.com/).
+2. Download and install ngrok on your Raspberry Pi:
+   ```bash
+   wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-arm.zip
+   unzip ngrok-stable-linux-arm.zip
+   sudo mv ngrok /usr/local/bin/
+   ```
+3. Authenticate ngrok with your authtoken (from your ngrok dashboard):
+   ```bash
+   ngrok config add-authtoken <YOUR_NGROK_AUTHTOKEN>
+   ```
+4. Start your Docker container as usual (see above).
+5. In a new terminal, run:
+   ```bash
+   ngrok http 8080
+   ```
+6. ngrok will display a public HTTPS URL (e.g., `https://abcd1234.ngrok.io`).
+7. Open this URL in your browser from anywhere in the world. It will proxy securely to your Pi with a valid certificate.
 
 ---
 

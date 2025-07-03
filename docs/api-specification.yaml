@@ -1,0 +1,413 @@
+openapi: 3.0.0
+info:
+  title: Tower of Song API
+  description: |
+    A lightweight, self-hosted music streaming server API that provides secure access to your music collection.
+    
+    ## Features
+    - Scan and index music files (MP3, FLAC, WAV) from configurable folders
+    - Extract metadata (title, artist, album) from ID3v2 tags
+    - Secure RESTful API for browsing, searching, and streaming music
+    - Token-based authentication for all endpoints
+    
+    ## Authentication
+    All endpoints except `/login` require authentication via a token obtained from the login endpoint.
+    
+    ## Base URL
+    The base URL for all API requests is `http://localhost:8080` (or your server's domain).
+    
+    ## Rate Limiting
+    Currently no rate limiting is implemented.
+    
+    ## Error Handling
+    All errors return appropriate HTTP status codes and JSON error messages.
+  version: 1.0.0
+  contact:
+    name: Tower of Song Support
+    url: https://github.com/yourusername/tower-of-song
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://yourdomain.com
+    description: Production server (replace with your domain)
+
+tags:
+  - name: Authentication
+    description: Authentication and token management
+  - name: Library
+    description: Music library management and statistics
+  - name: Search
+    description: Search and browse music files
+  - name: Streaming
+    description: Audio file streaming
+
+paths:
+  /login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate user and obtain access token
+      description: |
+        Authenticate with username and password to receive a token for accessing protected endpoints.
+        The token must be included in the Authorization header for all subsequent requests.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  description: Username for authentication
+                  example: "admin"
+                password:
+                  type: string
+                  description: Password for authentication
+                  example: "password"
+            examples:
+              default:
+                summary: Default credentials
+                value:
+                  username: "admin"
+                  password: "password"
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Access token for API requests
+                    example: "token-1703123456789012345"
+              examples:
+                success:
+                  summary: Successful login
+                  value:
+                    token: "token-1703123456789012345"
+        '400':
+          description: Invalid request format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /stats:
+    get:
+      tags:
+        - Library
+      summary: Get music library statistics
+      description: |
+        Retrieve statistics about the music library, including total number of files.
+        Requires authentication.
+      operationId: getStats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Library statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_files:
+                    type: integer
+                    description: Total number of music files in the library
+                    example: 1250
+              examples:
+                stats:
+                  summary: Library statistics
+                  value:
+                    total_files: 1250
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /list:
+    get:
+      tags:
+        - Library
+      summary: List all music files
+      description: |
+        Retrieve a list of all music files in the library, sorted by artist and title.
+        Requires authentication.
+      operationId: listFiles
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Music files retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MusicFile'
+              examples:
+                files:
+                  summary: List of music files
+                  value:
+                    - id: "1"
+                      path: "/app/music/Artist1/Album1/song1.mp3"
+                      title: "Song Title 1"
+                      artist: "Artist 1"
+                      album: "Album 1"
+                    - id: "2"
+                      path: "/app/music/Artist2/Album2/song2.mp3"
+                      title: "Song Title 2"
+                      artist: "Artist 2"
+                      album: "Album 2"
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /search:
+    get:
+      tags:
+        - Search
+      summary: Search music library
+      description: |
+        Search for music files by title, artist, album, or file path.
+        Search is case-insensitive and uses LIKE matching.
+        Requires authentication.
+      operationId: searchFiles
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query string
+          schema:
+            type: string
+            minLength: 1
+          example: "artist name"
+      responses:
+        '200':
+          description: Search results retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MusicFile'
+              examples:
+                search_results:
+                  summary: Search results
+                  value:
+                    - id: "1"
+                      path: "/app/music/Artist1/Album1/song1.mp3"
+                      title: "Song Title 1"
+                      artist: "Artist 1"
+                      album: "Album 1"
+        '400':
+          description: Missing search query parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /trackinfo:
+    get:
+      tags:
+        - Library
+      summary: Get track information
+      description: |
+        Retrieve detailed information about a specific track by its ID.
+        Requires authentication.
+      operationId: getTrackInfo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: Track ID
+          schema:
+            type: string
+            pattern: '^\d+$'
+          example: "123"
+      responses:
+        '200':
+          description: Track information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MusicFile'
+              examples:
+                track_info:
+                  summary: Track information
+                  value:
+                    id: "123"
+                    path: "/app/music/Artist1/Album1/song1.mp3"
+                    title: "Song Title"
+                    artist: "Artist Name"
+                    album: "Album Name"
+        '400':
+          description: Missing or invalid track ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Track not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /stream:
+    get:
+      tags:
+        - Streaming
+      summary: Stream audio file
+      description: |
+        Stream an audio file by its ID. Returns the audio data directly.
+        Supports both Authorization header and token query parameter for authentication.
+        Requires authentication.
+      operationId: streamFile
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: Track ID to stream
+          schema:
+            type: string
+            pattern: '^\d+$'
+          example: "123"
+        - name: token
+          in: query
+          required: false
+          description: Authentication token (alternative to Authorization header)
+          schema:
+            type: string
+          example: "token-1703123456789012345"
+      responses:
+        '200':
+          description: Audio file streamed successfully
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+              description: Audio file data
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Track not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        Include the token in the Authorization header.
+        Example: `Authorization: token-1703123456789012345`
+        Note: The token format is "token-" followed by a timestamp.
+
+  schemas:
+    MusicFile:
+      type: object
+      required:
+        - id
+        - path
+        - title
+        - artist
+        - album
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the music file
+          example: "123"
+        path:
+          type: string
+          description: File system path to the music file
+          example: "/app/music/Artist1/Album1/song1.mp3"
+        title:
+          type: string
+          description: Song title (from ID3v2 tags or filename)
+          example: "Song Title"
+        artist:
+          type: string
+          description: Artist name (from ID3v2 tags)
+          example: "Artist Name"
+        album:
+          type: string
+          description: Album name (from ID3v2 tags)
+          example: "Album Name"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Unauthorized"
+
+  examples:
+    MusicFileExample:
+      summary: Example music file
+      value:
+        id: "123"
+        path: "/app/music/Artist1/Album1/song1.mp3"
+        title: "Song Title"
+        artist: "Artist Name"
+        album: "Album Name"
+
+    ErrorExample:
+      summary: Example error response
+      value:
+        error: "Unauthorized" 
