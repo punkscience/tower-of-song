@@ -68,11 +68,13 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
+            type=ref,event=branch # e.g., main
+            type=ref,event=pr     # e.g., pr-123
+            type=semver,pattern={{version}} # e.g., 1.0.0, 1.1
+            type=semver,pattern={{major}}.{{minor}} # e.g., 1.0, 1.1
+            type=sha,prefix={{branch}}-     # e.g., main-abcdef1
+            # NEW: Tag as 'latest' only on pushes to the 'main' branch
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
