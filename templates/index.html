@@ -246,12 +246,12 @@
                 });
                 if (response.ok) {
                     let data = await response.json();
-                    document.getElementById("statsDisplay").innerText = `${data.total_files} FILES AVAILABLE`;
+                    document.getElementById("subtitleDisplay").innerText = `Your Minimal Music Streamer Featuring ${data.total_files} Files`;
                 } else {
-                    document.getElementById("statsDisplay").innerText = "UNABLE TO LOAD STATISTICS";
+                    document.getElementById("subtitleDisplay").innerText = "Your Minimal Music Streamer - UNABLE TO LOAD FILE COUNT";
                 }
             } catch (error) {
-                document.getElementById("statsDisplay").innerText = "ERROR LOADING STATISTICS";
+                document.getElementById("subtitleDisplay").innerText = "Your Minimal Music Streamer - ERROR LOADING FILE COUNT";
             }
         }
         
@@ -442,7 +442,7 @@
         <!-- Newspaper Header -->
         <div class="newspaper-header">
             <h1 class="newspaper-title">Tower of Song</h1>
-            <div class="newspaper-subtitle">Your Personal Music Archive</div>
+            <div class="newspaper-subtitle" id="subtitleDisplay">Your Personal Music Archive</div>
         </div>
         
         <!-- Dateline -->
@@ -473,10 +473,7 @@
         
         <!-- Main Application Section -->
         <div id="mainAppSection" class="newspaper-section" style="display:none;">
-            <!-- Stats Display -->
-            <div class="stats-display mb-8">
-                <span id="statsDisplay">LOADING STATISTICS...</span>
-            </div>
+            
             
             <div class="column-layout">
                 <!-- Left Column -->
