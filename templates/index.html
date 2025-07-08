@@ -206,6 +206,7 @@
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("mainAppSection").style.display = "block";
             loadStats(); // Load stats when showing main app
+            loadFavourites(); // Load favourites when showing main app
         }
         function showLogin() {
             document.getElementById("loginSection").style.display = "block";
@@ -306,6 +307,42 @@
             document.getElementById("nowArtist").innerText = track.artist || "";
             document.getElementById("nowAlbum").innerText = track.album || "";
             document.getElementById("nowTitle").innerText = track.title || "";
+            document.getElementById("favouriteBtn").textContent = track.favourited ? "★" : "☆";
+        }
+
+        async function toggleFavourite() {
+            if (!authToken || !currentTrackId) return;
+            await fetch(`/favourite?id=${encodeURIComponent(currentTrackId)}`, {
+                method: "POST",
+                headers: { "Authorization": authToken }
+            });
+            updateNowPlaying(currentTrackId);
+            loadFavourites();
+        }
+
+        async function loadFavourites() {
+            if (!authToken) return;
+            const response = await fetch(`/favourites`, {
+                headers: { "Authorization": authToken }
+            });
+            const data = await response.json();
+            const favouritesDiv = document.getElementById('favourites');
+            favouritesDiv.innerHTML = ''; // Clear previous results
+            if (data && data.length > 0) {
+                data.forEach(track => {
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.textContent = `${track.artist} - ${track.album} - ${track.title}`;
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        streamAudio(track.id);
+                    };
+                    favouritesDiv.appendChild(link);
+                    favouritesDiv.appendChild(document.createElement('br'));
+                });
+            } else {
+                favouritesDiv.textContent = 'No favourites yet.';
+            }
         }
         
         function streamAudio(id) {
@@ -349,6 +386,32 @@
             randomStreamLoop();
         }
         
+        async function search() {
+            if (!authToken) return;
+            const query = document.getElementById('searchQuery').value;
+            const response = await fetch(`/search?q=${encodeURIComponent(query)}`, {
+                headers: { "Authorization": authToken }
+            });
+            const data = await response.json();
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = ''; // Clear previous results
+            if (data && data.length > 0) {
+                data.forEach(track => {
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.textContent = `${track.artist} - ${track.album} - ${track.title}`;
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        streamAudio(track.id);
+                    };
+                    resultsDiv.appendChild(link);
+                    resultsDiv.appendChild(document.createElement('br'));
+                });
+            } else {
+                resultsDiv.textContent = 'No results found.';
+            }
+        }
+
         function stopRandom() {
             randomLoop = false;
             if (audio) {
@@ -422,7 +485,7 @@
                         <h3 class="section-headline">Search Library</h3>
                         <div class="flex gap-3 items-center">
                             <input type="text" id="searchQuery" placeholder="Enter search term..." class="newspaper-input flex-1">
-                            <button id="searchBtn" onclick="testAPI('/search?q=' + document.getElementById('searchQuery').value)" class="newspaper-button">Search</button>
+                            <button id="searchBtn" onclick="search()" class="newspaper-button">Search</button>
                         </div>
                     </div>
                     
@@ -452,25 +515,36 @@
                     <div class="mb-8">
                         <h3 class="section-headline">Now Playing</h3>
                         <div class="now-playing">
-                            <div class="mb-3">
-                                <div class="now-playing-label">Artist</div>
-                                <div class="now-playing-value" id="nowArtist">No track selected</div>
-                            </div>
-                            <div class="mb-3">
-                                <div class="now-playing-label">Album</div>
-                                <div class="now-playing-value" id="nowAlbum">-</div>
-                            </div>
-                            <div>
-                                <div class="now-playing-label">Track</div>
-                                <div class="now-playing-value" id="nowTitle">-</div>
+                            <div class="flex justify-between items-start">
+                                <div class="flex-grow">
+                                    <div class="mb-3">
+                                        <div class="now-playing-label">Artist</div>
+                                        <div class="now-playing-value" id="nowArtist">No track selected</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="now-playing-label">Album</div>
+                                        <div class="now-playing-value" id="nowAlbum">-</div>
+                                    </div>
+                                    <div>
+                                        <div class="now-playing-label">Track</div>
+                                        <div class="now-playing-value" id="nowTitle">-</div>
+                                    </div>
+                                </div>
+                                <button id="favouriteBtn" onclick="toggleFavourite()" class="newspaper-button" style="font-size: 1.5rem; padding: 0.5rem;">☆</button>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- API Response -->
+                    <!-- Search Results -->
                     <div class="mb-8">
-                        <h3 class="section-headline">API Response</h3>
-                        <pre id="output" class="api-output">Ready for commands...</pre>
+                        <h3 class="section-headline">Search Results</h3>
+                        <div id="searchResults" class="api-output" style="height: 200px; overflow-y: auto;">Ready for commands...</div>
+                    </div>
+
+                    <!-- Favourites -->
+                    <div class="mb-8">
+                        <h3 class="section-headline">Favourites</h3>
+                        <div id="favourites" class="api-output" style="height: 200px; overflow-y: auto;"></div>
                     </div>
                 </div>
             </div>

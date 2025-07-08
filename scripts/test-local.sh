@@ -54,7 +54,7 @@ fi
 
 # Build the Docker image
 echo -e "${BLUE}Building Docker image...${NC}"
-docker build -t $IMAGE_NAME .
+docker build --no-cache -t $IMAGE_NAME .
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Docker image built successfully!${NC}"
