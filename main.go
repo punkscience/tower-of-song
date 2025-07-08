@@ -355,6 +355,9 @@ func main() {
 
 	// Serve static assets if needed (e.g., /templates/)
 	r.Static("/templates", "templates")
+	
+	// Serve static CSS files
+	r.Static("/static", "static")
 
 	// CORS middleware for API endpoints
 	r.Use(func(c *gin.Context) {

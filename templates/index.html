@@ -3,8 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tower of Song API Client</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Tower of Song</title>
+    <link rel="stylesheet" href="/static/tailwind.css">
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #f8f8f8;
+            color: #1a1a1a;
+        }
+        .newspaper-container {
+            background-color: white;
+            border: 2px solid #1a1a1a;
+            box-shadow: 4px 4px 0px #1a1a1a;
+        }
+        .newspaper-title {
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 3px solid #1a1a1a;
+        }
+        .newspaper-button {
+            background-color: #1a1a1a;
+            color: white;
+            border: 2px solid #1a1a1a;
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+        }
+        .newspaper-button:hover {
+            background-color: white;
+            color: #1a1a1a;
+        }
+        .newspaper-input {
+            border: 2px solid #1a1a1a;
+            font-family: 'Times New Roman', Times, serif;
+            background-color: white;
+        }
+        .newspaper-input:focus {
+            outline: none;
+            border-color: #1a1a1a;
+            box-shadow: 2px 2px 0px #1a1a1a;
+        }
+        .stats-display {
+            background-color: #f0f0f0;
+            border: 2px solid #1a1a1a;
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: bold;
+            text-align: center;
+        }
+        .now-playing {
+            background-color: #f8f8f8;
+            border: 2px solid #1a1a1a;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .api-output {
+            background-color: #f0f0f0;
+            border: 2px solid #1a1a1a;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
     <script>
         let authToken = null;
         let randomLoop = false;
@@ -12,8 +73,6 @@
         let currentTrackId = null;
         
         function setControlsEnabled(enabled) {
-            document.getElementById("statsBtn").disabled = !enabled;
-            document.getElementById("listBtn").disabled = !enabled;
             document.getElementById("searchBtn").disabled = !enabled;
             document.getElementById("id").disabled = !enabled;
             document.getElementById("streamBtn").disabled = !enabled;
@@ -25,6 +84,7 @@
         function showMainApp() {
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("mainAppSection").style.display = "block";
+            loadStats(); // Load stats when showing main app
         }
         function showLogin() {
             document.getElementById("loginSection").style.display = "block";
@@ -53,6 +113,23 @@
         }
         function eraseCookie(name) {
             document.cookie = name+'=; Max-Age=-99999999; path=/';
+        }
+        
+        async function loadStats() {
+            if (!authToken) return;
+            try {
+                let response = await fetch('/stats', {
+                    headers: { "Authorization": authToken }
+                });
+                if (response.ok) {
+                    let data = await response.json();
+                    document.getElementById("statsDisplay").innerText = `${data.total_files} files available`;
+                } else {
+                    document.getElementById("statsDisplay").innerText = "Unable to load stats";
+                }
+            } catch (error) {
+                document.getElementById("statsDisplay").innerText = "Error loading stats";
+            }
         }
         
         async function login() {
@@ -175,51 +252,80 @@
         };
     </script>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center py-8">
-    <div class="w-full max-w-xl bg-white rounded-lg shadow-lg p-8">
-        <h2 class="text-2xl font-bold mb-4 text-center text-indigo-700">Tower of Song - Music API Test Client</h2>
+<body class="min-h-screen flex flex-col items-center py-8">
+    <div class="w-full max-w-2xl newspaper-container p-8">
+        <h1 class="text-3xl newspaper-title mb-6 text-center">TOWER OF SONG</h1>
+        
         <div id="loginSection">
-            <div class="flex flex-col md:flex-row items-center gap-2 mb-4">
-                <label class="flex-1">Username:
-                    <input type="text" id="username" value="admin" class="border rounded px-2 py-1 w-full" autocomplete="username">
+            <div class="flex flex-col md:flex-row items-center gap-4 mb-4">
+                <label class="flex-1 font-bold">USERNAME:
+                    <input type="text" id="username" value="admin" class="newspaper-input px-3 py-2 w-full mt-1" autocomplete="username">
                 </label>
-                <label class="flex-1">Password:
-                    <input type="password" id="password" class="border rounded px-2 py-1 w-full" autocomplete="current-password">
+                <label class="flex-1 font-bold">PASSWORD:
+                    <input type="password" id="password" class="newspaper-input px-3 py-2 w-full mt-1" autocomplete="current-password">
                 </label>
-                <button onclick="login()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">Login</button>
+                <button onclick="login()" class="newspaper-button px-6 py-2">LOGIN</button>
             </div>
-            <div class="mb-2 text-green-600" id="loginStatus"></div>
+            <div class="mb-4 text-center font-bold" id="loginStatus"></div>
         </div>
+        
         <div id="mainAppSection" style="display:none;">
-            <hr class="my-4">
-            <div class="flex flex-wrap gap-2 mb-4 justify-center">
-                <button id="statsBtn" onclick="testAPI('/stats')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Get Stats</button>
-                <button id="listBtn" onclick="testAPI('/list')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">List Files</button>
-                <input type="text" id="searchQuery" placeholder="Enter keyword" class="border rounded px-2 py-1">
-                <button id="searchBtn" onclick="testAPI('/search?q=' + document.getElementById('searchQuery').value)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Search</button>
-                <button id="randomBtn" onclick="startRandom()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded">Random</button>
-                <button id="stopBtn" onclick="stopRandom()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Stop</button>
-                <button onclick="logout()" class="bg-gray-400 hover:bg-gray-600 text-white px-3 py-1 rounded">Logout</button>
-            </div>
-            <div class="mb-4">
-                <h3 class="font-semibold mb-1">Stream Audio</h3>
-                <div class="flex gap-2 items-center">
-                    <input type="text" id="id" placeholder="Enter file id" class="border rounded px-2 py-1">
-                    <button id="streamBtn" onclick="streamAudio()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">Stream</button>
-                </div>
-                <audio id="audioPlayer" controls class="w-full mt-2 rounded shadow"></audio>
-            </div>
-            <div class="mb-4">
-                <h3 class="font-semibold mb-1">Now Playing</h3>
-                <div class="flex flex-col gap-1 bg-gray-50 rounded p-3 border">
-                    <div><span class="font-semibold">Artist:</span> <span id="nowArtist"></span></div>
-                    <div><span class="font-semibold">Album:</span> <span id="nowAlbum"></span></div>
-                    <div><span class="font-semibold">Track:</span> <span id="nowTitle"></span></div>
+            <hr class="my-6 border-2 border-black">
+            
+            <!-- Stats Display -->
+            <div class="mb-6">
+                <div class="stats-display py-3 px-4">
+                    <span id="statsDisplay">Loading...</span>
                 </div>
             </div>
-            <div>
-                <h3 class="font-semibold mb-1">API Response</h3>
-                <pre id="output" class="border rounded bg-gray-50 p-3 text-sm overflow-x-auto"></pre>
+            
+            <!-- Search Section -->
+            <div class="mb-6">
+                <h3 class="font-bold text-lg mb-3 border-b-2 border-black pb-1">SEARCH LIBRARY</h3>
+                <div class="flex gap-3 items-center">
+                    <input type="text" id="searchQuery" placeholder="Enter search term..." class="newspaper-input flex-1 px-3 py-2">
+                    <button id="searchBtn" onclick="testAPI('/search?q=' + document.getElementById('searchQuery').value)" class="newspaper-button px-4 py-2">SEARCH</button>
+                </div>
+            </div>
+            
+            <!-- Random Playback -->
+            <div class="mb-6">
+                <h3 class="font-bold text-lg mb-3 border-b-2 border-black pb-1">RANDOM PLAYBACK</h3>
+                <div class="flex gap-3">
+                    <button id="randomBtn" onclick="startRandom()" class="newspaper-button px-4 py-2">START RANDOM</button>
+                    <button id="stopBtn" onclick="stopRandom()" class="newspaper-button px-4 py-2">STOP</button>
+                </div>
+            </div>
+            
+            <!-- Stream Audio -->
+            <div class="mb-6">
+                <h3 class="font-bold text-lg mb-3 border-b-2 border-black pb-1">STREAM BY ID</h3>
+                <div class="flex gap-3 items-center">
+                    <input type="text" id="id" placeholder="Enter file ID..." class="newspaper-input flex-1 px-3 py-2">
+                    <button id="streamBtn" onclick="streamAudio()" class="newspaper-button px-4 py-2">STREAM</button>
+                </div>
+                <audio id="audioPlayer" controls class="w-full mt-3 border-2 border-black"></audio>
+            </div>
+            
+            <!-- Now Playing -->
+            <div class="mb-6">
+                <h3 class="font-bold text-lg mb-3 border-b-2 border-black pb-1">NOW PLAYING</h3>
+                <div class="now-playing p-4">
+                    <div class="mb-2"><span class="font-bold">ARTIST:</span> <span id="nowArtist"></span></div>
+                    <div class="mb-2"><span class="font-bold">ALBUM:</span> <span id="nowAlbum"></span></div>
+                    <div><span class="font-bold">TRACK:</span> <span id="nowTitle"></span></div>
+                </div>
+            </div>
+            
+            <!-- API Response -->
+            <div class="mb-6">
+                <h3 class="font-bold text-lg mb-3 border-b-2 border-black pb-1">API RESPONSE</h3>
+                <pre id="output" class="api-output p-4 overflow-x-auto"></pre>
+            </div>
+            
+            <!-- Logout -->
+            <div class="text-center">
+                <button onclick="logout()" class="newspaper-button px-6 py-2">LOGOUT</button>
             </div>
         </div>
     </div>
