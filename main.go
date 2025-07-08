@@ -359,6 +359,9 @@ func main() {
 	// Serve static CSS files
 	r.Static("/static", "static")
 
+	// Serve favicon
+	r.StaticFile("/favicon.ico", "static/favicon.ico")
+
 	// CORS middleware for API endpoints
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
