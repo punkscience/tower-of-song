@@ -14,6 +14,8 @@ COPY . .
 
 # Copy the templates directory explicitly for static file serving
 COPY ./templates /app/templates
+# Copy the static directory for CSS and other assets
+COPY ./static /app/static
 
 # Build the application
 RUN go build -o tower-of-song
@@ -33,6 +35,8 @@ RUN mkdir -p /app/data
 COPY --from=builder /app/tower-of-song /app/tower-of-song
 # Copy the templates directory from the builder stage
 COPY --from=builder /app/templates /app/templates
+# Copy the static directory from the builder stage
+COPY --from=builder /app/static /app/static
 
 # Ensure the binary is executable
 RUN chmod +x /app/tower-of-song
