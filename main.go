@@ -123,9 +123,23 @@ func initDB() error {
 		path TEXT UNIQUE,
 		title TEXT,
 		artist TEXT,
-		album TEXT
+		album TEXT,
+		favourited INTEGER DEFAULT 0
 	)`)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Add 'favourited' column if it doesn't exist (for migrations)
+	_, err = db.Exec("ALTER TABLE music ADD COLUMN favourited INTEGER DEFAULT 0")
+	if err != nil {
+		// Ignore error if column already exists
+		if !strings.Contains(err.Error(), "duplicate column name") {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func enableCORS(w http.ResponseWriter) {
@@ -312,22 +326,46 @@ func getTrackInfo(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing id parameter", http.StatusBadRequest)
 		return
 	}
-	row := db.QueryRow("SELECT id, path, title, artist, album FROM music WHERE id = ?", id)
+	row := db.QueryRow("SELECT id, path, title, artist, album, favourited FROM music WHERE id = ?", id)
 	var tid int
 	var path, title, artist, album string
-	err := row.Scan(&tid, &path, &title, &artist, &album)
+	var favourited bool
+	err := row.Scan(&tid, &path, &title, &artist, &album, &favourited)
 	if err != nil {
 		http.Error(w, "Track not found", http.StatusNotFound)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"id":     fmt.Sprint(tid),
 		"path":   path,
 		"title":  title,
 		"artist": artist,
 		"album":  album,
+		"favourited": favourited,
 	})
+}
+
+func favouriteTrack(w http.ResponseWriter, r *http.Request) {
+	enableCORS(w)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if !requireAuth(w, r) {
+		return
+	}
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing id parameter", http.StatusBadRequest)
+		return
+	}
+	_, err := db.Exec("UPDATE music SET favourited = NOT favourited WHERE id = ?", id)
+	if err != nil {
+		http.Error(w, "Failed to update track", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func main() {
@@ -359,6 +397,9 @@ func main() {
 	// Serve static CSS files
 	r.Static("/static", "static")
 
+	// Serve favicon
+	r.StaticFile("/favicon.ico", "static/favicon.ico")
+
 	// CORS middleware for API endpoints
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -378,7 +419,30 @@ func main() {
 	r.GET("/search", gin.WrapF(searchFiles))
 	r.GET("/stream", gin.WrapF(streamFile))
 	r.GET("/trackinfo", gin.WrapF(getTrackInfo))
+	r.POST("/favourite", gin.WrapF(favouriteTrack))
+	r.GET("/favourites", gin.WrapF(listFavourites))
 
 	fmt.Println("Server running on :8080")
 	r.Run(":8080")
+}
+
+func listFavourites(w http.ResponseWriter, r *http.Request) {
+	enableCORS(w)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if !requireAuth(w, r) {
+		return
+	}
+	rows, _ := db.Query("SELECT id, path, title, artist, album FROM music WHERE favourited = 1 ORDER BY artist ASC, title ASC")
+	var files []map[string]string
+	for rows.Next() {
+		var id int
+		var path, title, artist, album string
+		rows.Scan(&id, &path, &title, &artist, &album)
+		files = append(files, map[string]string{"id": fmt.Sprint(id), "path": path, "title": title, "artist": artist, "album": album})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(files)
 }
