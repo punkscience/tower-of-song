@@ -126,6 +126,7 @@
             border: 2px solid #1a1a1a;
             font-family: 'Source Sans Pro', sans-serif;
             padding: 1.5rem;
+            position: relative;
         }
         .now-playing-label {
             font-weight: 600;
@@ -289,7 +290,7 @@
                 headers: { "Authorization": authToken }
             });
             let data = await response.json();
-            document.getElementById("output").innerText = JSON.stringify(data, null, 2);
+            document.getElementById("generalOutput").innerText = JSON.stringify(data, null, 2);
         }
         
         async function updateNowPlaying(id) {
@@ -367,7 +368,7 @@
                 let stats = await statsResp.json();
                 let total = stats.total_files;
                 if (!total || total < 1) {
-                    document.getElementById("output").innerText = "NO FILES AVAILABLE FOR PLAYBACK";
+                    document.getElementById("generalOutput").innerText = "NO FILES AVAILABLE FOR PLAYBACK";
                     break;
                 }
                 // Pick random index (1-based id)
@@ -382,7 +383,7 @@
         
         function startRandom() {
             if (!authToken) return;
-            document.getElementById("output").innerText = "RANDOM PLAYBACK INITIATED - ENJOY THE MUSIC";
+            document.getElementById("generalOutput").innerText = "RANDOM PLAYBACK INITIATED - ENJOY THE MUSIC";
             randomStreamLoop();
         }
         
@@ -418,7 +419,7 @@
                 audio.pause();
                 audio.currentTime = 0;
             }
-            document.getElementById("output").innerText = "RANDOM PLAYBACK TERMINATED";
+            document.getElementById("generalOutput").innerText = "RANDOM PLAYBACK TERMINATED";
         }
         
         window.onload = function() {
@@ -516,8 +517,7 @@
                         <h3 class="section-headline">Now Playing</h3>
                         <div class="now-playing">
                             <div class="flex justify-between items-start">
-                                <div class="flex-grow">
-                                    <div class="mb-3">
+                                <div class="mb-3">
                                         <div class="now-playing-label">Artist</div>
                                         <div class="now-playing-value" id="nowArtist">No track selected</div>
                                     </div>
@@ -529,8 +529,7 @@
                                         <div class="now-playing-label">Track</div>
                                         <div class="now-playing-value" id="nowTitle">-</div>
                                     </div>
-                                </div>
-                                <button id="favouriteBtn" onclick="toggleFavourite()" class="newspaper-button" style="font-size: 1.5rem; padding: 0.5rem;">☆</button>
+                                <button id="favouriteBtn" onclick="toggleFavourite()" class="newspaper-button" style="font-size: 1.5rem; padding: 0.5rem; position: absolute; right: 1.5rem; top: 1.5rem;">☆</button>
                             </div>
                         </div>
                     </div>
@@ -545,6 +544,12 @@
                     <div class="mb-8">
                         <h3 class="section-headline">Favourites</h3>
                         <div id="favourites" class="api-output" style="height: 200px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- General Output -->
+                    <div class="mb-8">
+                        <h3 class="section-headline">General Output</h3>
+                        <div id="generalOutput" class="api-output" style="height: 100px; overflow-y: auto;"></div>
                     </div>
                 </div>
             </div>
