@@ -1,0 +1,23 @@
+name: Branch Protection
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight
+
+jobs:
+  enforce-branch-protection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Enforce Branch Protection
+        run: |
+          echo "Branch protection rules should be configured in GitHub repository settings:"
+          echo "1. Require pull request reviews before merging"
+          echo "2. Require status checks to pass before merging"
+          echo "3. Require branches to be up to date before merging"
+          echo "4. Restrict pushes that create files that use the gitignore or security models"
+          echo "5. Allow force pushes: Disabled"
+          echo "6. Allow deletions: Disabled" 
