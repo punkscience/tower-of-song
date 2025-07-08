@@ -1,0 +1,8 @@
+# Tower of Song - Test Folders Config Example
+# Copy this file to test-folders.conf and edit as needed
+
+# Absolute or relative path to your test music directory
+MUSIC_DIR="/absolute/path/to/your/music"
+
+# Absolute or relative path to your test data directory
+DATA_DIR="/absolute/path/to/your/data" 
