@@ -33,6 +33,7 @@
             color: #D4AF37;
             transition: background-color 0.2s;
         }
+
         .btn-custom:hover {
             background-color: #2A2A2A;
         }
@@ -126,6 +127,7 @@
             document.cookie = name + '=; Max-Age=-99999999; path=/';
         }
 
+      
         async function login() {
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
@@ -154,8 +156,8 @@
             loginSection.style.display = 'none';
             mainAppSection.style.display = 'block';
             loadFavourites();
-            fetchAllTracks();
             fetchFileCount();
+            fetchAllTracks();           
         }
 
         function showLogin() {
@@ -229,6 +231,7 @@
 
         async function toggleFavourite(id, button) {
             if (!authToken) return;
+
             await fetch(`/favourite?id=${id}`, { method: "POST", headers: { "Authorization": authToken } });
             const isFavourited = button.innerHTML.includes('❤️');
             button.innerHTML = isFavourited ? '♡' : '❤️';
@@ -280,6 +283,7 @@
             } else {
                 currentPlaylistIndex = (currentPlaylistIndex + 1) % playlist.length;
             }
+
             const nextTrackId = playlist[currentPlaylistIndex].id;
             playTrack(nextTrackId);
         }

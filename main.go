@@ -27,7 +27,8 @@ type Config struct {
 var (
 	db     *sql.DB
 	config Config
-	mutex  sync.Mutex
+	scanMutex  sync.Mutex // Mutex for controlling music folder scans
+	tokenMutex sync.Mutex // Mutex for protecting tokenStore
 
 	tokenStore = make(map[string]struct{}) // simple in-memory token store
 )
@@ -46,9 +47,9 @@ func requireAuth(w http.ResponseWriter, r *http.Request) bool {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return false
 	}
-	mutex.Lock()
+	tokenMutex.Lock()
 	_, ok := tokenStore[token]
-	mutex.Unlock()
+	tokenMutex.Unlock()
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return false
@@ -77,9 +78,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 	if creds.Username == config.Username && creds.Password == config.Password {
 		token := generateToken()
-		mutex.Lock()
+		tokenMutex.Lock()
 		tokenStore[token] = struct{}{}
-		mutex.Unlock()
+		tokenMutex.Unlock()
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"token": token})
 		return
@@ -240,8 +241,8 @@ func streamFile(w http.ResponseWriter, r *http.Request) {
 
 func scanMusicFolders() {
 	log.Println("Scanning music folders...")
-	mutex.Lock()
-	defer mutex.Unlock()
+	scanMutex.Lock()
+	defer scanMutex.Unlock()
 
 	for _, folder := range config.MusicFolders {
 		filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
