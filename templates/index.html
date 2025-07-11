@@ -4,261 +4,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tower of Song</title>
-    <link rel="stylesheet" href="/static/tailwind.css">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Source Sans Pro', sans-serif;
-            background-color: #f5f5f5;
-            color: #1a1a1a;
-            line-height: 1.6;
+            background-color: #1A1A1A;
+            color: #F5F5F5;
+            font-family: 'Inter', sans-serif;
         }
-        .newspaper-container {
-            background-color: white;
-            border: 3px solid #1a1a1a;
-            box-shadow: 8px 8px 0px #1a1a1a;
-            max-width: 900px;
-            margin: 0 auto;
+        .accent-gold {
+            color: #D4AF37;
         }
-        .newspaper-header {
-            background-color: #1a1a1a;
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-            border-bottom: 3px solid #1a1a1a;
+        .bg-accent-gold {
+            background-color: #D4AF37;
         }
-        .newspaper-title {
-            font-family: 'Playfair Display', serif;
-            font-weight: 900;
-            font-size: 3.5rem;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            margin: 0;
-            line-height: 1;
+        .border-accent-gold {
+            border-color: #D4AF37;
         }
-        .newspaper-subtitle {
-            font-family: 'Playfair Display', serif;
-            font-style: italic;
-            font-size: 1.1rem;
-            margin-top: 0.5rem;
-            opacity: 0.9;
+        .accent-grey {
+            color: #888888;
         }
-        .newspaper-dateline {
-            font-family: 'Source Sans Pro', sans-serif;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 2px solid #1a1a1a;
-            padding: 1rem 0;
-            margin: 0 2rem;
+        .title-font {
+            font-family: 'Lora', serif;
         }
-        .newspaper-section {
-            padding: 2rem;
-            border-bottom: 1px solid #ddd;
+        .btn-custom {
+            background-color: #000000;
+            border: 1px solid #D4AF37;
+            color: #D4AF37;
+            transition: background-color 0.2s;
         }
-        .newspaper-section:last-child {
-            border-bottom: none;
-        }
-        .section-headline {
-            font-family: 'Playfair Display', serif;
-            font-weight: 700;
-            font-size: 1.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border-bottom: 3px solid #1a1a1a;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-        }
-        .newspaper-button {
-            background-color: #1a1a1a;
-            color: white;
-            border: 2px solid #1a1a1a;
-            font-family: 'Source Sans Pro', sans-serif;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 0.75rem 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-        .newspaper-button:hover {
-            background-color: white;
-            color: #1a1a1a;
-            transform: translateY(-2px);
-            box-shadow: 4px 4px 0px #1a1a1a;
-        }
-        .newspaper-button:disabled {
-            background-color: #ccc;
-            border-color: #ccc;
-            color: #666;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        .newspaper-input {
-            border: 2px solid #1a1a1a;
-            font-family: 'Source Sans Pro', sans-serif;
-            background-color: white;
-            padding: 0.75rem;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-        .newspaper-input:focus {
-            outline: none;
-            border-color: #1a1a1a;
-            box-shadow: 4px 4px 0px #1a1a1a;
-            transform: translateY(-2px);
-        }
-        .stats-display {
-            background-color: #f8f8f8;
-            border: 2px solid #1a1a1a;
-            font-family: 'Source Sans Pro', sans-serif;
-            font-weight: 600;
-            text-align: center;
-            padding: 1rem;
-            font-size: 1.1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .now-playing {
-            background-color: #f8f8f8;
-            border: 2px solid #1a1a1a;
-            font-family: 'Source Sans Pro', sans-serif;
-            padding: 1.5rem;
-            position: relative;
-        }
-        .now-playing-label {
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
-        }
-        .now-playing-value {
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-        .api-output {
-            background-color: #f0f0f0;
-            border: 2px solid #1a1a1a;
-            font-family: 'Courier New', monospace;
-            font-size: 0.8rem;
-            padding: 1rem;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .login-form {
-            background-color: #f8f8f8;
-            border: 2px solid #1a1a1a;
-            padding: 2rem;
-            margin: 2rem;
-        }
-        .form-label {
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-        .audio-player {
-            border: 2px solid #1a1a1a;
-            background-color: #f8f8f8;
-            padding: 0.5rem;
-        }
-        .status-message {
-            font-weight: 600;
-            text-align: center;
-            padding: 1rem;
-            margin: 1rem 0;
-            border: 2px solid #1a1a1a;
-            background-color: #f8f8f8;
-        }
-        .column-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-        @media (max-width: 768px) {
-            .column-layout {
-                grid-template-columns: 1fr;
-            }
-            .newspaper-title {
-                font-size: 2.5rem;
-            }
+
+        .btn-custom:hover {
+            background-color: #2A2A2A;
         }
     </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <div id="loginSection" class="w-full max-w-md p-8 space-y-8">
+        <h1 class="text-4xl font-bold text-center title-font accent-gold">Tower of Song</h1>
+        <div class="space-y-4">
+            <input type="text" id="username" placeholder="Username" class="w-full p-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-gold">
+            <input type="password" id="password" placeholder="Password" class="w-full p-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-gold">
+            <button onclick="login()" class="w-full p-3 font-bold rounded-lg btn-custom">Login</button>
+        </div>
+        <div id="loginStatus" class="text-center accent-grey"></div>
+    </div>
+
+    <div id="mainAppSection" style="display:none;" class="w-full max-w-md p-8 space-y-6">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold title-font">Tower of Song</h1>
+            <button onclick="logout()" class="text-sm accent-grey hover:underline">Logout</button>
+        </div>
+        <div id="fileCount" class="text-center text-sm accent-grey"></div>
+
+        <div id="loadingIndicator" class="text-center text-sm accent-gold" style="display:none;">
+            Loading tracks...
+        </div>
+
+        <div class="relative">
+            <input type="text" id="searchQuery" placeholder="Search" class="w-full p-3 pl-10 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-gold">
+            <svg class="absolute w-5 h-5 left-3 top-3.5 accent-grey" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </div>
+        <div id="searchResults" class="space-y-2 max-h-48 overflow-y-auto"></div>
+
+        <div>
+            <h2 class="text-lg font-bold">Now Playing</h2>
+            <div id="nowPlaying" class="p-4 mt-2 bg-gray-800 rounded-lg">
+                <!-- Now playing content will be injected here -->
+            </div>
+        </div>
+
+        <div class="flex items-center justify-center space-x-4">
+            <button onclick="toggleShuffle()" id="shuffleBtn" class="p-3 font-bold rounded-full btn-custom">Shuffle</button>
+            <button onclick="nextTrack()" class="p-3 font-bold rounded-lg btn-custom">Next</button>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-bold">Favourites</h2>
+            <div id="favouritesList" class="mt-2 space-y-2 max-h-64 overflow-y-auto">
+                <!-- Favourites content will be injected here -->
+            </div>
+        </div>
+        <audio id="audioPlayer" class="w-full"></audio>
+    </div>
+
     <script>
         let authToken = null;
-        let randomLoop = false;
-        let audio = null;
         let currentTrackId = null;
-        
-        function setControlsEnabled(enabled) {
-            document.getElementById("searchBtn").disabled = !enabled;
-            document.getElementById("id").disabled = !enabled;
-            document.getElementById("streamBtn").disabled = !enabled;
-            document.getElementById("searchQuery").disabled = !enabled;
-            document.getElementById("randomBtn").disabled = !enabled;
-            document.getElementById("stopBtn").disabled = !enabled;
-        }
-        
-        function showMainApp() {
-            document.getElementById("loginSection").style.display = "none";
-            document.getElementById("mainAppSection").style.display = "block";
-            loadStats(); // Load stats when showing main app
-            loadFavourites(); // Load favourites when showing main app
-        }
-        function showLogin() {
-            document.getElementById("loginSection").style.display = "block";
-            document.getElementById("mainAppSection").style.display = "none";
-        }
-        
-        // Cookie helpers
+        let shuffleMode = false;
+        let playlist = [];
+        let currentPlaylistIndex = -1;
+
+        const loginSection = document.getElementById('loginSection');
+        const mainAppSection = document.getElementById('mainAppSection');
+        const audioPlayer = document.getElementById('audioPlayer');
+
         function setCookie(name, value, days) {
             let expires = "";
             if (days) {
                 const date = new Date();
-                date.setTime(date.getTime() + (days*24*60*60*1000));
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
                 expires = "; expires=" + date.toUTCString();
             }
             document.cookie = name + "=" + (value || "") + expires + "; path=/";
         }
+
         function getCookie(name) {
             let nameEQ = name + "=";
             let ca = document.cookie.split(';');
-            for(let i=0;i < ca.length;i++) {
+            for (let i = 0; i < ca.length; i++) {
                 let c = ca[i];
-                while (c.charAt(0)==' ') c = c.substring(1,c.length);
-                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
             }
             return null;
         }
+
         function eraseCookie(name) {
-            document.cookie = name+'=; Max-Age=-99999999; path=/';
+            document.cookie = name + '=; Max-Age=-99999999; path=/';
         }
-        
-        async function loadStats() {
-            if (!authToken) return;
-            try {
-                let response = await fetch('/stats', {
-                    headers: { "Authorization": authToken }
-                });
-                if (response.ok) {
-                    let data = await response.json();
-                    document.getElementById("subtitleDisplay").innerText = `Your Minimal Music Streamer Featuring ${data.total_files} Files`;
-                } else {
-                    document.getElementById("subtitleDisplay").innerText = "Your Minimal Music Streamer - UNABLE TO LOAD FILE COUNT";
-                }
-            } catch (error) {
-                document.getElementById("subtitleDisplay").innerText = "Your Minimal Music Streamer - ERROR LOADING FILE COUNT";
-            }
-        }
-        
+
+      
         async function login() {
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
-            const resp = await fetch(`/login`, {
+            const resp = await fetch('/login', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password })
@@ -267,307 +140,178 @@
                 const data = await resp.json();
                 authToken = data.token;
                 setCookie('tower_token', authToken, 7);
-                setControlsEnabled(true);
-                document.getElementById("loginStatus").innerText = "ACCESS GRANTED - WELCOME TO TOWER OF SONG";
                 showMainApp();
             } else {
-                document.getElementById("loginStatus").innerText = "ACCESS DENIED - INVALID CREDENTIALS";
-                setControlsEnabled(false);
+                document.getElementById("loginStatus").innerText = "Invalid credentials";
             }
         }
-        
+
         function logout() {
             authToken = null;
             eraseCookie('tower_token');
-            setControlsEnabled(false);
             showLogin();
-            document.getElementById("loginStatus").innerText = "SESSION TERMINATED";
-        }
-        
-        async function testAPI(endpoint) {
-            if (!authToken) return;
-            let response = await fetch(endpoint, {
-                headers: { "Authorization": authToken }
-            });
-            let data = await response.json();
-            document.getElementById("generalOutput").innerText = JSON.stringify(data, null, 2);
-        }
-        
-        async function updateNowPlaying(id) {
-            if (!authToken || !id) return;
-            let response = await fetch(`/trackinfo?id=${encodeURIComponent(id)}`, {
-                headers: { "Authorization": authToken }
-            });
-            if (!response.ok) {
-                document.getElementById("nowArtist").innerText = "";
-                document.getElementById("nowAlbum").innerText = "";
-                document.getElementById("nowTitle").innerText = "";
-                return;
-            }
-            let track = await response.json();
-            document.getElementById("nowArtist").innerText = track.artist || "";
-            document.getElementById("nowAlbum").innerText = track.album || "";
-            document.getElementById("nowTitle").innerText = track.title || "";
-            document.getElementById("favouriteBtn").textContent = track.favourited ? "★" : "☆";
         }
 
-        async function toggleFavourite() {
-            if (!authToken || !currentTrackId) return;
-            await fetch(`/favourite?id=${encodeURIComponent(currentTrackId)}`, {
-                method: "POST",
-                headers: { "Authorization": authToken }
-            });
-            updateNowPlaying(currentTrackId);
+        function showMainApp() {
+            loginSection.style.display = 'none';
+            mainAppSection.style.display = 'block';
             loadFavourites();
+            fetchFileCount();
+            fetchAllTracks();           
+        }
+
+        function showLogin() {
+            loginSection.style.display = 'block';
+            mainAppSection.style.display = 'none';
+        }
+
+        async function fetchAllTracks() {
+            if (!authToken) return;
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.style.display = 'block'; // Show loading indicator
+
+            const response = await fetch('/list', { headers: { "Authorization": authToken } });
+            if (response.ok) {
+                playlist = await response.json();
+            }
+            loadingIndicator.style.display = 'none'; // Hide loading indicator
+        }
+
+        function renderTrack(track, container) {
+            const trackElement = document.createElement('div');
+            trackElement.className = 'flex items-center justify-between p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700';
+            trackElement.onclick = () => playTrack(track.id);
+
+            const trackInfo = `
+                <div class="flex items-center">
+                    <svg class="w-10 h-10 mr-3 text-gray-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v6h-2zm0 8h2v2h-2z"/></svg>
+                    <div>
+                        <div class="font-bold">${track.title}</div>
+                        <div class="text-sm accent-grey">${track.artist} / ${track.album}</div>
+                    </div>
+                </div>
+            `;
+            const favouriteButton = `<button onclick="event.stopPropagation(); toggleFavourite('${track.id}', this)" class="p-2 rounded-full hover:bg-gray-600">${track.favourited ? '❤️' : '♡'}</button>`;
+
+            trackElement.innerHTML = trackInfo + favouriteButton;
+            container.appendChild(trackElement);
         }
 
         async function loadFavourites() {
             if (!authToken) return;
-            const response = await fetch(`/favourites`, {
-                headers: { "Authorization": authToken }
-            });
-            const data = await response.json();
-            const favouritesDiv = document.getElementById('favourites');
-            favouritesDiv.innerHTML = ''; // Clear previous results
-            if (data && data.length > 0) {
-                data.forEach(track => {
-                    const link = document.createElement('a');
-                    link.href = '#';
-                    link.textContent = `${track.artist} - ${track.album} - ${track.title}`;
-                    link.onclick = (e) => {
-                        e.preventDefault();
-                        streamAudio(track.id);
-                    };
-                    favouritesDiv.appendChild(link);
-                    favouritesDiv.appendChild(document.createElement('br'));
-                });
+            const response = await fetch('/favourites', { headers: { "Authorization": authToken } });
+            const favourites = await response.json();
+            const favouritesList = document.getElementById('favouritesList');
+            favouritesList.innerHTML = '';
+            if (favourites && favourites.length > 0) {
+                favourites.forEach(track => renderTrack(track, favouritesList));
             } else {
-                favouritesDiv.textContent = 'No favourites yet.';
-            }
-        }
-        
-        function streamAudio(id) {
-            if (!authToken) return;
-            if (!id) id = document.getElementById("id").value;
-            currentTrackId = id;
-            audio = document.getElementById("audioPlayer");
-            audio.src = `/stream?id=${encodeURIComponent(id)}&token=${encodeURIComponent(authToken)}`;
-            audio.setAttribute("crossorigin", "anonymous");
-            audio.load();
-            audio.play();
-            updateNowPlaying(id);
-        }
-        
-        async function randomStreamLoop() {
-            randomLoop = true;
-            while (randomLoop) {
-                // Get total files
-                let statsResp = await fetch(`/stats`, {
-                    headers: { "Authorization": authToken }
-                });
-                let stats = await statsResp.json();
-                let total = stats.total_files;
-                if (!total || total < 1) {
-                    document.getElementById("generalOutput").innerText = "NO FILES AVAILABLE FOR PLAYBACK";
-                    break;
-                }
-                // Pick random index (1-based id)
-                let randomId = Math.floor(Math.random() * total) + 1;
-                streamAudio(randomId);
-                await new Promise((resolve) => {
-                    audio.onended = () => resolve();
-                    audio.onerror = () => resolve();
-                });
-            }
-        }
-        
-        function startRandom() {
-            if (!authToken) return;
-            document.getElementById("generalOutput").innerText = "RANDOM PLAYBACK INITIATED - ENJOY THE MUSIC";
-            randomStreamLoop();
-        }
-        
-        async function search() {
-            if (!authToken) return;
-            const query = document.getElementById('searchQuery').value;
-            const response = await fetch(`/search?q=${encodeURIComponent(query)}`, {
-                headers: { "Authorization": authToken }
-            });
-            const data = await response.json();
-            const resultsDiv = document.getElementById('searchResults');
-            resultsDiv.innerHTML = ''; // Clear previous results
-            if (data && data.length > 0) {
-                data.forEach(track => {
-                    const link = document.createElement('a');
-                    link.href = '#';
-                    link.textContent = `${track.artist} - ${track.album} - ${track.title}`;
-                    link.onclick = (e) => {
-                        e.preventDefault();
-                        streamAudio(track.id);
-                    };
-                    resultsDiv.appendChild(link);
-                    resultsDiv.appendChild(document.createElement('br'));
-                });
-            } else {
-                resultsDiv.textContent = 'No results found.';
+                favouritesList.innerHTML = '<div class="text-center accent-grey">No favourites yet.</div>';
             }
         }
 
-        function stopRandom() {
-            randomLoop = false;
-            if (audio) {
-                audio.pause();
-                audio.currentTime = 0;
-            }
-            document.getElementById("generalOutput").innerText = "RANDOM PLAYBACK TERMINATED";
+        async function playTrack(id) {
+            if (!authToken) return;
+            currentTrackId = id;
+            audioPlayer.src = `/stream?id=${id}&token=${authToken}`;
+            audioPlayer.play();
+            updateNowPlaying(id);
         }
-        
+
+        async function updateNowPlaying(id) {
+            if (!authToken || !id) return;
+            const response = await fetch(`/trackinfo?id=${id}`, { headers: { "Authorization": authToken } });
+            if (response.ok) {
+                const track = await response.json();
+                const nowPlayingDiv = document.getElementById('nowPlaying');
+                nowPlayingDiv.innerHTML = '';
+                renderTrack(track, nowPlayingDiv);
+            }
+        }
+
+        async function toggleFavourite(id, button) {
+            if (!authToken) return;
+
+            await fetch(`/favourite?id=${id}`, { method: "POST", headers: { "Authorization": authToken } });
+            const isFavourited = button.innerHTML.includes('❤️');
+            button.innerHTML = isFavourited ? '♡' : '❤️';
+            loadFavourites();
+            if (currentTrackId === id) {
+                updateNowPlaying(id);
+            }
+        }
+
+        document.getElementById('searchQuery').addEventListener('input', async (e) => {
+            const query = e.target.value;
+            const searchResults = document.getElementById('searchResults');
+            if (query.length < 2) {
+                searchResults.innerHTML = '';
+                return;
+            }
+            const response = await fetch(`/search?q=${query}`, { headers: { "Authorization": authToken } });
+            const results = await response.json();
+            searchResults.innerHTML = '';
+            if (results && results.length > 0) {
+                results.forEach(track => renderTrack(track, searchResults));
+            } else {
+                searchResults.innerHTML = '<div class="text-center accent-grey">No results found.</div>';
+            }
+        });
+
+        function toggleShuffle() {
+            const shuffleBtn = document.getElementById('shuffleBtn');
+            const isPlaying = !audioPlayer.paused;
+
+            if (isPlaying && shuffleMode) {
+                audioPlayer.pause();
+                shuffleBtn.innerText = 'Shuffle';
+                shuffleMode = false;
+            } else {
+                shuffleMode = true;
+                if (playlist.length > 0) {
+                    nextTrack();
+                    shuffleBtn.innerText = 'Stop';
+                }
+            }
+        }
+
+        function nextTrack() {
+            if (playlist.length === 0) return;
+
+            if (shuffleMode) {
+                currentPlaylistIndex = Math.floor(Math.random() * playlist.length);
+            } else {
+                currentPlaylistIndex = (currentPlaylistIndex + 1) % playlist.length;
+            }
+
+            const nextTrackId = playlist[currentPlaylistIndex].id;
+            playTrack(nextTrackId);
+        }
+
+        audioPlayer.onended = () => {
+            if (shuffleMode) {
+                nextTrack();
+            }
+        };
+
+        async function fetchFileCount() {
+            if (!authToken) return;
+            const response = await fetch('/stats', { headers: { "Authorization": authToken } });
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('fileCount').innerText = `Total files: ${data.total_files}`;
+            }
+        }
+
         window.onload = function() {
-            setControlsEnabled(false);
-            audio = document.getElementById("audioPlayer");
-            // Try to auto-login with cookie
             const token = getCookie('tower_token');
             if (token) {
                 authToken = token;
-                setControlsEnabled(true);
                 showMainApp();
             } else {
                 showLogin();
             }
         };
-    </script>
-</head>
-<body class="min-h-screen py-8">
-    <div class="newspaper-container">
-        <!-- Newspaper Header -->
-        <div class="newspaper-header">
-            <h1 class="newspaper-title">Tower of Song</h1>
-            <div class="newspaper-subtitle" id="subtitleDisplay">Your Personal Music Archive</div>
-        </div>
-        
-        <!-- Dateline -->
-        <div class="newspaper-dateline">
-            <span id="currentDate"></span> • VOLUME 1, ISSUE 1 • ESTABLISHED 2024
-        </div>
-        
-        <!-- Login Section -->
-        <div id="loginSection" class="newspaper-section">
-            <div class="login-form">
-                <h2 class="section-headline">Authentication Required</h2>
-                <div class="column-layout">
-                    <div>
-                        <label class="form-label">Username</label>
-                        <input type="text" id="username" value="admin" class="newspaper-input w-full" autocomplete="username">
-                    </div>
-                    <div>
-                        <label class="form-label">Password</label>
-                        <input type="password" id="password" class="newspaper-input w-full" autocomplete="current-password">
-                    </div>
-                </div>
-                <div class="text-center mt-6">
-                    <button onclick="login()" class="newspaper-button">Authenticate</button>
-                </div>
-                <div class="status-message" id="loginStatus"></div>
-            </div>
-        </div>
-        
-        <!-- Main Application Section -->
-        <div id="mainAppSection" class="newspaper-section" style="display:none;">
-            
-            
-            <div class="column-layout">
-                <!-- Left Column -->
-                <div>
-                    <!-- Search Section -->
-                    <div class="mb-8">
-                        <h3 class="section-headline">Search Library</h3>
-                        <div class="flex gap-3 items-center">
-                            <input type="text" id="searchQuery" placeholder="Enter search term..." class="newspaper-input flex-1">
-                            <button id="searchBtn" onclick="search()" class="newspaper-button">Search</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Random Playback -->
-                    <div class="mb-8">
-                        <h3 class="section-headline">Random Playback</h3>
-                        <div class="flex gap-3">
-                            <button id="randomBtn" onclick="startRandom()" class="newspaper-button">Start Random</button>
-                            <button id="stopBtn" onclick="stopRandom()" class="newspaper-button">Stop</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Stream Audio -->
-                    <div class="mb-8">
-                        <h3 class="section-headline">Stream by ID</h3>
-                        <div class="flex gap-3 items-center mb-3">
-                            <input type="text" id="id" placeholder="Enter file ID..." class="newspaper-input flex-1">
-                            <button id="streamBtn" onclick="streamAudio()" class="newspaper-button">Stream</button>
-                        </div>
-                        <audio id="audioPlayer" controls class="audio-player w-full"></audio>
-                    </div>
-                </div>
-                
-                <!-- Right Column -->
-                <div>
-                    <!-- Now Playing -->
-                    <div class="mb-8">
-                        <h3 class="section-headline">Now Playing</h3>
-                        <div class="now-playing">
-                            <div class="flex justify-between items-start">
-                                <div class="mb-3">
-                                        <div class="now-playing-label">Artist</div>
-                                        <div class="now-playing-value" id="nowArtist">No track selected</div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <div class="now-playing-label">Album</div>
-                                        <div class="now-playing-value" id="nowAlbum">-</div>
-                                    </div>
-                                    <div>
-                                        <div class="now-playing-label">Track</div>
-                                        <div class="now-playing-value" id="nowTitle">-</div>
-                                    </div>
-                                <button id="favouriteBtn" onclick="toggleFavourite()" class="newspaper-button" style="font-size: 1.5rem; padding: 0.5rem; position: absolute; right: 1.5rem; top: 1.5rem;">☆</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Search Results -->
-                    <div class="mb-8">
-                        <h3 class="section-headline">Search Results</h3>
-                        <div id="searchResults" class="api-output" style="height: 200px; overflow-y: auto;">Ready for commands...</div>
-                    </div>
-
-                    <!-- Favourites -->
-                    <div class="mb-8">
-                        <h3 class="section-headline">Favourites</h3>
-                        <div id="favourites" class="api-output" style="height: 200px; overflow-y: auto;"></div>
-                    </div>
-
-                    <!-- General Output -->
-                    <div class="mb-8">
-                        <h3 class="section-headline">General Output</h3>
-                        <div id="generalOutput" class="api-output" style="height: 100px; overflow-y: auto;"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Logout -->
-            <div class="text-center mt-8">
-                <button onclick="logout()" class="newspaper-button">Terminate Session</button>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        // Set current date
-        const now = new Date();
-        const options = { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-        };
-        document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
     </script>
 </body>
 </html>
