@@ -1,2 +1,7 @@
 # Ignore local test folder config
-scripts/test-folders.conf 
+scripts/test-folders.conf
+
+# Ignore build artifacts
+tower-of-song
+app.log
+data/

@@ -51,44 +51,54 @@
         <div id="loginStatus" class="text-center accent-grey"></div>
     </div>
 
-    <div id="mainAppSection" style="display:none;" class="w-full max-w-md p-8 space-y-6">
+    <div id="mainAppSection" style="display:none;" class="w-full max-w-6xl p-4 md:p-8 mx-auto">
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-bold title-font">Tower of Song</h1>
             <button onclick="logout()" class="text-sm accent-grey hover:underline">Logout</button>
         </div>
-        <div id="fileCount" class="text-center text-sm accent-grey"></div>
+        <div id="fileCount" class="text-center text-sm accent-grey py-2"></div>
 
         <div id="loadingIndicator" class="text-center text-sm accent-gold" style="display:none;">
             Loading tracks...
         </div>
 
-        <div class="relative">
-            <input type="text" id="searchQuery" placeholder="Search" class="w-full p-3 pl-10 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-gold">
-            <svg class="absolute w-5 h-5 left-3 top-3.5 accent-grey" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-        </div>
-        <div id="searchResults" class="space-y-2 max-h-48 overflow-y-auto"></div>
+        <div class="md:flex md:space-x-8 mt-6">
 
-        <div>
-            <h2 class="text-lg font-bold">Now Playing</h2>
-            <div id="nowPlaying" class="p-4 mt-2 bg-gray-800 rounded-lg">
-                <!-- Now playing content will be injected here -->
+            <!-- Left Column -->
+            <div class="md:w-1/2 lg:w-2/5 space-y-6">
+                <div>
+                    <h2 class="text-lg font-bold">Now Playing</h2>
+                    <div id="nowPlaying" class="p-4 mt-2 bg-gray-800 rounded-lg min-h-[120px]">
+                        <!-- Now playing content will be injected here -->
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-center space-x-4">
+                    <button onclick="togglePlayPause()" id="playPauseBtn" class="p-3 font-bold rounded-full btn-custom">Play</button>
+                    <button onclick="toggleShuffle()" id="shuffleBtn" class="p-3 font-bold rounded-lg btn-custom">Shuffle</button>
+                    <button onclick="nextTrack()" class="p-3 font-bold rounded-lg btn-custom">Next</button>
+                </div>
+                <audio id="audioPlayer" class="w-full"></audio>
+            </div>
+
+            <!-- Right Column -->
+            <div class="md:w-1/2 lg:w-3/5 space-y-6 mt-6 md:mt-0">
+                <div class="relative">
+                    <input type="text" id="searchQuery" placeholder="Search" class="w-full p-3 pl-10 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-gold">
+                    <svg class="absolute w-5 h-5 left-3 top-3.5 accent-grey" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <div id="searchResults" class="space-y-2 max-h-48 md:max-h-64 overflow-y-auto"></div>
+
+                <div>
+                    <h2 class="text-lg font-bold">Favourites</h2>
+                    <div id="favouritesList" class="mt-2 space-y-2 max-h-64 md:max-h-96 overflow-y-auto">
+                        <!-- Favourites content will be injected here -->
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="flex items-center justify-center space-x-4">
-            <button onclick="toggleShuffle()" id="shuffleBtn" class="p-3 font-bold rounded-full btn-custom">Shuffle</button>
-            <button onclick="nextTrack()" class="p-3 font-bold rounded-lg btn-custom">Next</button>
-        </div>
-
-        <div>
-            <h2 class="text-lg font-bold">Favourites</h2>
-            <div id="favouritesList" class="mt-2 space-y-2 max-h-64 overflow-y-auto">
-                <!-- Favourites content will be injected here -->
-            </div>
-        </div>
-        <audio id="audioPlayer" class="w-full"></audio>
     </div>
 
     <script>
@@ -216,6 +226,7 @@
             audioPlayer.src = `/stream?id=${id}&token=${authToken}`;
             audioPlayer.play();
             updateNowPlaying(id);
+            document.getElementById('playPauseBtn').innerText = 'Pause';
         }
 
         async function updateNowPlaying(id) {
@@ -258,21 +269,26 @@
             }
         });
 
-        function toggleShuffle() {
-            const shuffleBtn = document.getElementById('shuffleBtn');
-            const isPlaying = !audioPlayer.paused;
-
-            if (isPlaying && shuffleMode) {
-                audioPlayer.pause();
-                shuffleBtn.innerText = 'Shuffle';
-                shuffleMode = false;
-            } else {
-                shuffleMode = true;
-                if (playlist.length > 0) {
+        function togglePlayPause() {
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            if (audioPlayer.paused) {
+                if (currentTrackId) {
+                    audioPlayer.play();
+                    playPauseBtn.innerText = 'Pause';
+                } else {
                     nextTrack();
-                    shuffleBtn.innerText = 'Stop';
                 }
+            } else {
+                audioPlayer.pause();
+                playPauseBtn.innerText = 'Play';
             }
+        }
+
+        function toggleShuffle() {
+            shuffleMode = !shuffleMode;
+            const shuffleBtn = document.getElementById('shuffleBtn');
+            shuffleBtn.classList.toggle('bg-accent-gold', shuffleMode);
+            shuffleBtn.classList.toggle('text-black', shuffleMode);
         }
 
         function nextTrack() {
