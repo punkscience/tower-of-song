@@ -1,6 +1,6 @@
 module towerofsong
 
-go 1.23.10
+go 1.24.9
 
 require (
 	github.com/bogem/id3v2 v1.2.0
